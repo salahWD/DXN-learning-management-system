@@ -1,0 +1,287 @@
+body {
+  height: 100vh;
+  margin: 0;
+  background-color: #f3f3f3;
+}
+
+/* Navbar */
+
+header nav {
+  background-color: #fcfcfc;
+}
+header nav ul li:not(:last-child) {
+  margin-left: 1rem;
+}
+header nav .user-icon {
+  background: #EEE;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* End Navbar */
+
+/* Login */
+
+.login, .register {
+  width: 100%;
+  padding: 3rem;
+  display:flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content:center;
+  background: linear-gradient(120deg, #2980b9, #8e44ad);
+}
+
+/* End Login */
+
+/* Global */
+
+.container {
+  width: 90%;
+  margin: auto;
+}
+
+/* End Global */
+
+/* Bootstrap Edit */
+form .form-container {
+  max-width: 550px;
+  width: 550px;
+  margin: auto;
+  background-color: #FEFEFE;
+  padding: 2rem 1.5rem;
+  border-radius: 5px;
+}
+form .input-container .label-container label,
+label {
+  color: #555;
+  font-weight: bold;
+}
+form .form-container .title {
+  margin: 0;
+  color: #444;
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgb(121, 121, 121);
+  text-align: center !important;
+}
+form .input-container {
+  display:flex;
+  flex-direction: column-reverse;
+  position: relative;
+}
+form .input-container .label-container {
+  width: 100%;
+  height: 2rem;
+}
+form .input-container .label-container label {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0.8rem;
+  user-select: none;
+  transition: all 0.3s ease-in-out;
+  -webkit-user-select: none;
+}
+form .input-container input {
+  padding: 0.4rem;
+  background-color: transparent;
+  border: 1px solid #EEE;
+  box-shadow: inset 0 0 4px #00000085;
+  border-radius: 5px;
+}
+form .input-container {
+  margin: 1rem 0;
+}
+form .input-container input:focus,
+form .input-container input.active {
+  background-color: transparent;
+  border-color: #a5a5a5;
+  box-shadow: 0 0 0 0.1rem rgb(0 0 0 / 47%), inset 0 0 4px #00000085;
+}
+form .input-container input.active + .label-container label,
+form .input-container input:focus + .label-container label {
+  bottom: 2.8rem;
+}
+button:focus,
+input:focus {
+  outline: none;
+}
+.modal-header .btn-close {
+  margin: -.5rem auto -.5rem -.5rem !important;
+}
+
+/* End Edit Bootstrap */
+
+/* Questions */
+
+.radio {
+  display: flex;
+  flex-direction: row !important;
+  justify-content: space-evenly;
+}
+.question {
+  border: none;
+  width: 2.5rem;
+  display: flex;
+  height: 2.5rem;
+  font-size: 1.3rem;
+  align-items: center;
+  text-decoration: none;
+  justify-content: center;
+}
+.question:hover {
+  color: #fff;
+}
+.question.null {
+  color: #0dcaf0;
+}
+#question-content {
+  cursor: pointer;
+}
+
+/* End Questions */
+
+/* Item Manage */
+
+.item-manage .image-container {
+  position: relative;
+}
+.item-manage .image-edit-btn {
+  top: 1.2rem;
+  right: 1.5rem;
+  position: absolute;
+}
+.item-manage .order-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.item-manage .order-container .item {
+  padding: 8px 12px;
+  border-radius: 50%;
+  width: fit-content;
+}
+.item-manage .order-container .item .tooltip {
+  left: 50%;
+  top: -50px;
+  border-radius: 4px;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+/* End Item Manage */
+
+/* Courses Show */
+
+.course .card-body {
+  padding-right: 2rem;
+  padding-left: 2rem;
+}
+.course .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.course .header i {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.course .header i:hover {
+  color: rgba(0,0,0,0.75)!important;
+}
+.course .note {
+  width: 100%;
+  padding: 8px;
+  opacity: 0.8;
+  padding-right: 2rem;
+  background-color: #f3f3f3;
+}
+.course::before {
+  top: 0.2rem;
+  right: 5rem;
+  color: #198754;
+  content: "\f058";
+  font-size: 1.5rem;
+  position: absolute;
+  font-family: "fontawesome";
+}
+.course.close::before {
+  content: "\f023";
+  color: rgba(0,0,0,.5);
+}
+.course.current::before {
+  top: 0.5rem;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  font-size: 1rem;
+  content: "\f061";
+  color: #0d6efd;
+  border: 2px solid;
+  border-radius: 50%;
+  align-items: center;
+  font-weight: lighter;
+  justify-content: center;
+}
+
+.course .course-content {
+  margin: 2rem 0;
+}
+.course hr {
+  margin-bottom: 0.8rem;
+}
+
+/* End Courses Show */
+
+/* Show Items */
+
+.card.item.close {
+  position: relative;
+}
+.card.item.close::before {
+  top: 2px;
+  left: 20px;
+  content: '\f023';
+  font-size: 1.5rem;
+  position: absolute;
+  font-family: "fontawesome";
+}
+.card.item.close .card-img-top {
+  filter: grayscale(1) blur(3px);
+}
+
+/* End Show Items */
+
+/* Custom Library */
+
+.under-line-title {
+  position: relative;
+}
+.under-line-title::before {
+  left: 10%;
+  bottom: 0;
+  width: 40%;
+  height: 7px;
+  content: "";
+  opacity: 0.8;
+  position: absolute;
+  border-radius: 10px;
+  background-color: #0d6efd;
+  border-bottom: 3px solid #084cb1;
+}
+.grid-2 {
+  display: grid;
+  column-gap: 3rem;
+  grid-template-columns: 1fr 1fr;
+}
+.link {
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
