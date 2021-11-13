@@ -1593,10 +1593,8 @@ class Lecture extends Item {
     }
   }// end of get_lectures method
 
-  public function get_lecture($course, $order) {
+  public function get_lecture() {
     /*
-      takes   : $order wich is lecture order to get it
-      does    : gets lecture info
       returns : array containes lecture info
     */
 
@@ -1605,10 +1603,10 @@ class Lecture extends Item {
     $stmt = $conn->prepare(
       "SELECT lectures.*, items_order.order, items_order.course_id, items_order.id AS order_id,
       DATEDIFF(NOW(), lectures.date) AS day_before
-      FROM items_order
-      INNER JOIN lectures ON lectures.id = items_order.item_id
-      WHERE items_order.item_type = 1 AND items_order.order = ? AND items_order.course_id = ?");
-    $stmt->execute([$order, $course]);
+      FROM lectures
+      INNER JOIN items_order ON items_order.item_id = lectures.id
+      WHERE items_order.item_type = 1 AND lectures.id = ?");
+    $stmt->execute([$this->id]);
     if ($stmt->rowCount() > 0) {
       return $stmt->fetch(PDO::FETCH_ASSOC);
     }else {
@@ -1619,18 +1617,18 @@ class Lecture extends Item {
   
   public static function delete_lecture($id) {
     /*
-      takes: $id wich is lectures.id
+      takes: lectures id
       does: removes lecture from lectures table and make sure the items_order.order is right
-      returns: success |false
+      returns: true |false
     */
 
     global $conn;
 
     $update_order = $conn->prepare(
       "UPDATE items_order SET `order` = (`order` - 1)
-      WHERE `order` > (SELECT items_order.order FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = 1)
+      WHERE `order` > (SELECT items_order.order FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = ?)
       AND items_order.course_id = (SELECT items_order.course_id FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = 1)");
-    $update_order->execute([$id, $id]);
+    $update_order->execute([Lecture::TYPE, $id, $id]);
 
     $order_delete = $conn->prepare("DELETE FROM items_order WHERE item_id = ? AND item_type = 1");
     
@@ -1806,9 +1804,8 @@ class Exam extends Item {
     }// if ther is no errors
   }// end of insert_exam method
 
-  public function get_exam($id) {
+  public function get_exam() {
     /*
-      takes   : $id = exam id
       does    : gets exam from exams table
       returns : info | false
     */
@@ -1821,7 +1818,7 @@ class Exam extends Item {
       INNER JOIN items_order ON items_order.item_id = exams.id
       LEFT JOIN questions ON questions.exam_id = exams.id
       WHERE exams.id = ?");
-    $stmt->execute([$id]);
+    $stmt->execute([$this->id]);
 
     if ($stmt->rowCount() > 0) {
       return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -1831,26 +1828,38 @@ class Exam extends Item {
 
   }// end of get_exam method
 
-  public static function delete_exam($id) {
+  public function delete_exam() {
     /*
-      takes: $id wich is exams.id
+      takes: exam id
       does: removes exam from exams table and make sure the order is right
-      returns: on success true : on fail false
+      returns: true | false
     */
 
     global $conn;
 
-    $update_order = $conn->prepare("UPDATE items_order SET `order` = (`order` - 1) WHERE `order` > (SELECT items_order.order FROM items_order WHERE items_order.item_id = ?)");
-    $update_order->execute([$id]);
+    $this->set_data($this->get_exam());
 
-    $order_delete = $conn->prepare("DELETE FROM items_order WHERE items_order.item_id = ? AND item_type = 2");
+    $update_order = $conn->prepare(
+      "UPDATE items_order
+        SET `order` = (`order` - 1)
+      WHERE course_id = ? AND `order` > 
+      (SELECT items_order.order FROM items_order WHERE items_order.item_id = ? AND item_type = ?)");
+    $update_order->execute([$this->course_id, $this->id, self::TYPE]);
+
+    $questions_answers = $conn->prepare(
+      "DELETE questions, answers FROM exams
+        INNER JOIN questions ON questions.exam_id = exams.id
+        INNER JOIN answers ON answers.question_id = questions.id
+      WHERE exams.id = ?");
+    $questions_answers->execute([$this->id]);
     
-    $order_delete->execute([$id]);
-
-    $exam_delete = $conn->prepare("DELETE FROM exams WHERE id = ?");
+    $exam_delete = $conn->prepare(
+      "DELETE items_order, exams FROM exams
+        INNER JOIN items_order ON items_order.item_id = exams.id
+      WHERE items_order.item_type = ? AND exams.id = ?");
     
-
-    if ($exam_delete->execute([$id])) {
+    $result = $exam_delete->execute([Exam::TYPE, $this->id]);
+    if ($result) {
       return true;
     }else {
       return false;

@@ -1,56 +1,37 @@
 <?php
   
-  $lctr_order = $URL[3];
+  if ($_SERVER["REQUEST_METHOD"] == "POST"):
+    $lecture = new Lecture();
+    $lecture->set_data($_POST);
+    echo "<pre>";
+    print_r($lecture);
+    echo "</pre>";
+  endif;
+
   $lecture    = new Lecture();
-  $course     = new Course();
-  $course->id = $URL[2];
-  
-  if ($user::USER_TYPE == 1) {
-    $lecture->set_data($lecture->get_lecture($course->id, $lctr_order));
-    $course->set_data(["items" => $course->get_items_id_name()]);
-  }else {
+  $lecture->id = $URL[2];
+  $lecture->set_data($lecture->get_lecture());
 
-    if ($course->get_teacher_permission($user->id)):
-      
-      $perm = str_split($course->permission);
+  $course = new Course();
+  $course->id = $lecture->course_id;
 
-      if ($perm[1] == 1):// update permission
-
-        $lecture->set_data(
-          $lecture->get_lecture($course->id, $lctr_order)
-        );
-    
-        $course->id = $lecture->course_id;
-    
-        $course->set_data([
-          "items" => $course->get_items_id_name()
-        ]);
-        
-      else:?>
-        <div class="container">
-          <div class="row">
-            <div class="col">
-              <div class="alert alert-danger">
-                <div class="alert-title">No Access !!</div>
-                <p class="lead">You Have No Access To This course</p>
-              </div>
-            </div>
+  if ($user::USER_TYPE == 2):
+    $course->permission = $course->get_teacher_permission($user->teacher_id);
+    if (!$course->check_permission("UPDATE")):?>
+      <div class="container">
+        <div class="row">
+          <div class="alert alert-danger text-center mt-4">
+            <h3 class="alert-title">No Access !!</h3>
+            <p class="lead">You Have No Access To This course</p>
           </div>
-        </div> 
-      <?php endif;?>
-    <?php else:?>
-     <div class="container">
-       <div class="row">
-         <div class="col">
-           <div class="alert alert-danger">
-             <div class="alert-title">No Access !!</div>
-             <p class="lead">You Have No Access To This course</p>
-           </div>
-         </div>
-       </div>
-     </div> 
-    <?php endif;
-  }
+        </div>
+      </div> 
+      <?php
+      exit();
+    endif;
+  endif;
+    
+  $course->items = $course->get_items_id_name();
 ?>
 
 <div class="container item-manage">
@@ -67,6 +48,7 @@
           <input name="thumbnail" type="file" id="thumbnail-input" class="d-none">
           <input name="title" type="text" placeholder="العنوان" class="form-control mb-2" value="<?php echo $lecture->title;?>">
           <textarea name="description" placeholder="الوصف" class="form-control" style="min-height:150px;max-height:300px;"><?php echo $lecture->description;?></textarea>
+          <input class="btn btn-success w-100 mt-2" type="submit" value="تعديل">
           <div class="order-container">
             <ul class="list-unstyled mt-4">
               <?php if (!empty($course->items) && count($course->items) > 0):?>

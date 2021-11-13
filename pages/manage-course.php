@@ -82,11 +82,11 @@
             </div>
               <div class="p-2 d-flex justify-content-around">
                 <?php if ($item::TYPE == 1):?>
-                  <a href="<?php echo theURL . language . "/lecture-manage/" . $course->id . "/" . $item->order;?>" class="btn btn-success"><i class="fa fa-edit"></i></a>
+                  <a href="<?php echo theURL . language . "/lecture-manage/" . $item->id;?>" class="btn btn-success"><i class="fa fa-edit"></i></a>
                 <?php else:?>
-                  <a href="<?php echo theURL . language . "/exam-manage/" . $course->id . "/" . $item->order;?>" class="btn btn-success"><i class="fa fa-edit"></i></a>
+                  <a href="<?php echo theURL . language . "/exam-manage/" . $item->id . "/add";?>" class="btn btn-success"><i class="fa fa-edit"></i></a>
                 <?php endif;?>
-                <a href="<?php echo theURL . language . "/item-delete/" . $course->id . "/" . $item->order;?>" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+                <a href="<?php echo theURL . language . "/item-delete/" . $item->id . "/" . $item::TYPE;?>" class="btn btn-danger"><i class="fa fa-trash"></i></a>
                 <a href="<?php echo theURL . language . "/view/" . $course->id . "/" . $item->order;?>" class="btn btn-primary"><i class="fa fa-eye"></i></a>
               </div>
           </div>

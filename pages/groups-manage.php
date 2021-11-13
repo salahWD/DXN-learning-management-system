@@ -9,14 +9,14 @@
 ?>
 
 <div class="container">
-	<div class="text-center mt-4 mb-4">
+	<div class="text-center mt-4 mb-4 pb-4">
 		<h2 class="d-inline under-line-title">ادارة المجموعات</h2>
   </div>
   <div class="row">
     <?php foreach($groups as $group):?>
       <div class="col-md-4">
         <div class="card">
-          <img src="http://placehold.it/450x450/<?php echo floor(rand(0, 9)) . floor(rand(0, 9)) . floor(rand(0, 9));?>" class="card-img-top" alt="image">
+          <img src="http://placehold.it/450x250/ddd" class="card-img-top" alt="image">
           <div class="card-body">
             <h5 class="card-title">المبيعات</h5>
             <p class="card-text">هذة المجموعة خاصة لطلاب المبيعات ولا تشمل التسويق عامة</p>

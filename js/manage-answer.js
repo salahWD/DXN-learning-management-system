@@ -5,60 +5,13 @@ if (answerContainer) {
   const quesInput = document.getElementById(`question-input`);
   const addAns    = document.getElementById(`add-answer`);
   
-  // add answer Button
+  //    add answer Button
   addAns.addEventListener("click", (e) => {
     e.preventDefault();
     addAnswer();
   });
 
-  // prevent buttons from submiting
-  document.querySelectorAll(`button`).forEach(btn => {
-    btn.addEventListener("click", (e) => e.preventDefault());
-  });
-
-  //  question content transform to input
-  quesText.addEventListener("click", function () {
-    quesText.style.display = `none`;
-    quesInput.value = quesText.innerText;
-    quesInput.type = `text`;
-    quesInput.focus();
-  });
-
-  //  question input transform to text 
-  quesInput.addEventListener("blur", function () {
-    quesInput.type = `hidden`;
-    if (quesInput.value.length == 0) {
-      quesText.innerText = quesInput.placeholder;
-    }else {
-      quesText.innerText = quesInput.value;
-    }
-    quesText.style.display = `block`;
-  });
-  
-  // delete answer
-  answerContainer.querySelectorAll(`.delete-answer`).forEach(delBtn => {
-  
-    delBtn.addEventListener("click", function () {
-      deleteAnswer(delBtn);
-    });
-  
-  });
-
-  // check answer
-  answerContainer.querySelectorAll(`.check-answer`).forEach(checkBtn => {
-  
-    checkBtn.addEventListener("click", function () {
-      this.classList.toggle("active");
-      if (this.classList.contains("active")) {
-        this.parentElement.querySelector(`input[type="hidden"]`).value = 2;
-      }else {
-        this.parentElement.querySelector(`input[type="hidden"]`).value = 1;
-      }
-    });
-  
-  });
-
-  // functions
+  //    add answer
   function addAnswer() {
     let id = document.querySelectorAll(`#answer-container .answer[data-status="add"]`).length + 1;
     
@@ -110,7 +63,55 @@ if (answerContainer) {
     
     answerContainer.appendChild(answerBody);
   }
+
+  //    prevent buttons from submiting
+  document.querySelectorAll(`button`).forEach(btn => {
+    btn.addEventListener("click", (e) => e.preventDefault());
+  });
+
+  //    question content transform to input
+  quesText.addEventListener("click", function () {
+    quesText.style.display = `none`;
+    quesInput.value = quesText.innerText;
+    quesInput.type = `text`;
+    quesInput.focus();
+  });
+
+  //    question input transform to text 
+  quesInput.addEventListener("blur", function () {
+    quesInput.type = `hidden`;
+    if (quesInput.value.length == 0) {
+      quesText.innerText = quesInput.placeholder;
+    }else {
+      quesText.innerText = quesInput.value;
+    }
+    quesText.style.display = `block`;
+  });
   
+  //    delete answer
+  answerContainer.querySelectorAll(`.delete-answer`).forEach(delBtn => {
+  
+    delBtn.addEventListener("click", function () {
+      deleteAnswer(delBtn);
+    });
+  
+  });
+
+  //    check answer
+  answerContainer.querySelectorAll(`.check-answer`).forEach(checkBtn => {
+  
+    checkBtn.addEventListener("click", function () {
+      this.classList.toggle("active");
+      if (this.classList.contains("active")) {
+        this.parentElement.querySelector(`input[type="hidden"]`).value = 2;
+      }else {
+        this.parentElement.querySelector(`input[type="hidden"]`).value = 1;
+      }
+    });
+  
+  });
+
+  //    delete answer
   function deleteAnswer(element) {
     if (answerContainer.querySelectorAll(`.answer`).length - 2 != 0) {
       element.parentElement.remove();
