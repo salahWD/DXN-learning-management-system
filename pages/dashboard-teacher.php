@@ -57,7 +57,7 @@
 											</div>
 										</div>
 										<div class="col">
-											<div class="card item-type" data-page="exam-add">
+											<div class="card item-type" data-page="exam-create">
 												<div class="card-body">
 													<h5 class="card-title">اختبار</h5>
 													<p class="card-text">مجموعة من الاسئلة و الخيارات لأختبار مستوى الطالب</p>

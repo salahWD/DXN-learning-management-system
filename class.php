@@ -659,7 +659,7 @@ class Teacher extends User {
       return false;
     }
 
-  }// array object course[*]{permission}
+  }// array > object course[*]{permission}
 
 }// end of class Teacher
 
@@ -1145,24 +1145,67 @@ class Course {
 
   public function delete_course() {
     /*
-      does  : removes info from courses table
-      return: course id | false
+      does  : removes all course info
+      return: true | false
     */
 
     global $conn;
-
-    $stmt = $conn->prepare("DELETE FROM courses WHERE courses.id = ?");
+    
+    # Delete Teachers Permission
+    $stmt = $conn->prepare("DELETE FROM teachers_courses WHERE course_id = ?");
     $result = $stmt->execute([$this->id]);
-
-    if ($result) {
-      $stmt = $conn->prepare("DELETE FROM teachers_courses WHERE courses_id = ?");
-      $result = $stmt->execute([$this->id]);
-      return true;
-    }else {
+    if (!$result) {
       return false;
     }
+    
+    /*
+    DELETE `one`, two FROM three
+      INNER JOIN `one` ON `one`.id = three.name
+      INNER JOIN two ON two.id = three.age
+    WHERE three.id = 9
+    */
 
-  }// Boolian true =  deleted, false = there is no course
+
+    # Delete Lectures
+    $stmt = $conn->prepare(
+      "DELETE FROM lectures
+        INNER JOIN items_order AS item ON item.item_id = lectures.id
+      WHERE item.item_type = ? AND item.course_id = ?");
+    $result = $stmt->execute([Lecture::TYPE, $this->id]);
+    if (!$result) {
+      return false;
+    }
+    
+    # Delete Exams
+    $stmt = $conn->prepare(
+      "DELETE item, exams, questions, answers FROM exams
+        INNER JOIN items_order AS item ON item.item_id = exams.id
+        INNER JOIN questions ON questions.exam_id = exams.id
+        INNER JOIN answers ON answers.question_id = questions.id
+      WHERE item.item_type = ? AND item.course_id = ?");
+    $result = $stmt->execute([Exam::TYPE, $this->id]);
+    if (!$result) {
+      return false;
+    }
+    # Delete Exams
+    $stmt = $conn->prepare(
+      "DELETE FROM exams
+        INNER JOIN items_order AS item ON item.item_id = exams.id
+      WHERE item.item_type = ? AND item.course_id = ?");
+    $result = $stmt->execute([Exam::TYPE, $this->id]);
+    if (!$result) {
+      return false;
+    }
+    
+    # Delete Course Data
+    $stmt = $conn->prepare("DELETE FROM courses WHERE courses.id = ?");
+    $result = $stmt->execute([$this->id]);
+    if (!$result) {
+      return false;
+    }
+    return true;
+
+  }// Boolian true | false
 
   public function get_items_all() {
     /*

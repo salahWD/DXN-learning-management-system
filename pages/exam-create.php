@@ -3,7 +3,7 @@
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       
       $exam_data = [// all form data
-        "course_id"     => $_SESSION["course_manage_id"],
+        "course_id"     => $URL[2],
         "title"         => $_POST["title"],
         "percent"       => $_POST["percent"],
         "description"   => $_POST["description"],
@@ -12,13 +12,8 @@
       $exam = new Exam();
       $exam->set_data($exam_data);
 
-      // echo "<pre>";
-      // print_r($exam);
-      // echo "</pre>";
-      // exit();
-      
       if ($exam->insert_exam()) {
-        header("Location: " . theURL . language . "/course-manage/" . $_SESSION["course_manage_id"]);
+        header("Location: " . theURL . language . "/manage-course/" . $exam->course_id);
         exit();
       }else {
         echo "Error: No Insert Exam";
@@ -34,7 +29,7 @@
   <div class="row">
     <div class="col-md-2"></div>
     <div class="col-md-8 mt-md-5">
-      <form action="<?php echo theURL . language . '/exam-add';?>" method="POST" enctype="multipart/form-data">
+      <form action="<?php echo theURL . language . '/exam-create/' . $URL[2];?>" method="POST" enctype="multipart/form-data">
         
         <!-- Title input -->
         <div class="form-outline mb-4">

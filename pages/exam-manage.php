@@ -1,5 +1,5 @@
 <?php
-
+// delete course => [delete all of it's items specialy exams]
 $order        = $URL[3];
 
 $exam         = new Exam();
@@ -13,7 +13,9 @@ $course->id   = $exam->course_id;
 if ($user::USER_TYPE == 1) {
   $course->set_data(["items" => $course->get_items_id_name()]);
 }else {
-
+  echo "<pre>";
+  print_r($course);
+  echo "</pre>";
   $course->permission = $course->get_teacher_permission($user->teacher_id);
 
   if ($course->check_permission("UPDATE")):// update permission

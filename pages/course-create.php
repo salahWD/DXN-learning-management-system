@@ -7,7 +7,7 @@
       "description" => $_POST["desc"],
       "is_enable"   => isset($_POST["private"]) ? 1: 2,
     ];
-
+    
     $course = new Course();
 
     if ($user::USER_TYPE == 1) {
@@ -18,12 +18,8 @@
     
     $course->set_data($info);
     
+    $user->insert_course($course);
 
-    if ($user::USER_TYPE == 1) {
-      $course->add_course();
-    }elseif ($user::USER_TYPE == 2) {
-      $course->insert_course_for_teacher($user->teacher_id);
-    }
     header("Location: " . theURL . language . "/manage-course");
     exit();
 

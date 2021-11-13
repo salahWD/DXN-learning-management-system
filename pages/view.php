@@ -24,7 +24,7 @@ if ($item->get_item_type($course_id, $item_order)) {
         </div>
         <div class="col-md-2"></div>
       </div>
-      <div class="d-flex justify-content-around">
+      <div class="d-flex justify-content-around mt-2 pb-3">
         <button class="btn btn-primary" type="button">Next</button>
         <button class="btn btn-primary" type="button">Prev</button>
       </div>

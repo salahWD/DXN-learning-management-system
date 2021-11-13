@@ -2,12 +2,30 @@
 
   if (isset($URL[2]) && !empty($URL[2]) && is_numeric($URL[2])):
 
-    $course = new Course();
-    $course->id = $URL[2];
-  
-    $course->set_data($course->get_course());
+    $course_id = $URL[2];
     
-    $course->items = $course->get_items_all();
+    if ($user::USER_TYPE == 1) {
+      $course = new Course();
+      $course->id = $course_id;
+      $course->set_data($course->get_course());
+    }else {
+      $user->accessible_courses = $user->get_own_courses();
+      $course = isset($user->accessible_courses[$course_id]) ? $user->accessible_courses[$course_id] : NULL;
+    }
+    
+    if (isset($course) && !empty($course) && is_object($course)) {
+      $course->items = $course->get_items_all();
+    }else {?>
+      <div class="container">
+        <div class="alert alert-danger text-center mt-3">
+          <h3 class="title">هذة الدورة غير متوفرة</h3>
+          <p>عذرا لكن يبدو ان هذه الدورة غير متوفرة</p>
+        </div>
+      </div>
+      <?php
+      exit();
+    }
+
 
 ?>
 
