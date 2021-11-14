@@ -1313,10 +1313,6 @@ class Item {
   public $day_before;
   public $errors = [];
 
-  protected function MB($bite) {
-    return ((($bite / 8) / 1024) / 1024);
-  }// end
-
   public function item_pass($user_id) {
     /*
     takes: $user_id wich is student id
@@ -1367,23 +1363,11 @@ class Item {
 
 
 class Lecture extends Item {
-  const ACCEPTED_IMAGE = [
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-    "gif",
-  ];
-  const ACCEPTED_VIDEO = [
-    "mp4",
-    "webm"
-  ];
   const ALL_COURSES = "ALL_LECTURES";
-  const MAX_VIDEO_SIZE = 0.5;// mega byte
-  const MAX_IMAGE_SIZE = 0.5;// mega byte
   const TYPE           = 1;// item type
   public $thumbnail;
   public $video;
+  public $errors;
 
 
   public function set_data($data) {
@@ -1425,31 +1409,73 @@ class Lecture extends Item {
 
   }// end of set_data method
 
-  private function check_data() {
-    #  lecture video validation
-    if (!isset($this->video["name"]) || empty($this->video["name"])) {// availability
-      $this->errors["video"] = "ther is no video.";
-    }
-    if ($this->MB($this->video["size"]) > self::MAX_VIDEO_SIZE) {// size
-      $this->errors["video"] = "this video is larger then " . self::MAX_VIDEO_SIZE . "MB";
-    }
-    $name_array = explode(".", $this->video["name"]);
-    if (!in_array(end($name_array), self::ACCEPTED_VIDEO)) {// extension
-      $this->errors["video"] = "the file most to be " . implode(", ", self::ACCEPTED_VIDEO);
+  private function check_data($check_type = 2) {
+    /*
+      $check_type = [1 => check for insert, 2 => check for update]
+    */
+
+    $errors = [];
+
+    if ($check_type == 1) {
+
+      # video checks
+      if (!isset($this->video) || empty($this->video) || !is_object($this->video)) {
+        $errors[] = "ther is no video.";
+      }else {
+        if (!$this->video->validate_data()) {
+          foreach ($this->video->errors as $err):
+            $errors[] = $err;
+          endforeach;
+        }
+      }
+      
+      # image checks
+      if (!isset($this->thumbnail) || empty($this->thumbnail) || !is_object($this->thumbnail)) {
+        $errors[] = "ther is no image.";
+      }else {
+
+        if (!$this->thumbnail->validate_data()) {
+          foreach ($this->thumbnail->errors as $err):
+            $errors[] = $err;
+          endforeach;
+        }
+      }
+
+    }else {
+
+      if (isset($this->video) && !empty($this->video) && is_object($this->video)) {
+        if (!$this->video->validate_data()) {
+          foreach ($this->video->errors as $err):
+            array_push($errors["video"], $err);
+          endforeach;
+        }
+      }
+
+      if (isset($this->thumbnail) && !empty($this->thumbnail) && is_object($this->thumbnail)) {
+        if (!$this->thumbnail->validate_data()) {
+          foreach ($this->thumbnail->errors as $err):
+            array_push($errors["image"], $err);
+          endforeach;
+        }
+      }
+
+      if (!isset($this->title) || empty($this->title) || !is_string($this->title)) {
+        $errors["title"] = "title can't be empty.";
+      }
+
+      if (!isset($this->description) || empty($this->description) || !is_string($this->description)) {
+        $errors["description"] = "description can't be empty.";
+      }
+
     }
 
-    #  thumbnail image validation
-    if (!isset($this->thumbnail["name"]) || empty($this->thumbnail["name"])) {
-      $this->errors["thumbnail"] = "ther is no thumbnail image";
+    if (count($errors) > 0) {
+      $this->errors = $errors;
+      return false;
+    }else {
+      return true;
     }
-    if ($this->MB($this->thumbnail["size"]) > self::MAX_IMAGE_SIZE) {// size
-      $this->errors["thumbnail"] = "this image is larger then " . self::MAX_IMAGE_SIZE . "MB";
-    }
-    $name_array = explode(".", $this->thumbnail["name"]);
-    if (!in_array(end($name_array), self::ACCEPTED_IMAGE)) {// extension
-      $this->errors["thumbnail"] = "the image most to be " . implode(", ", self::ACCEPTED_VIDEO);
-    }
-  }// end of check_data method
+  }
 
   private function token($length) {
     /*
@@ -1465,51 +1491,36 @@ class Lecture extends Item {
     }
     
     return $token;
-  }// end of token method
+  }
   
   public function insert_lecture() {
     /*
-      takes   : nothing
       does    : get random name for files and upload them than insert into lectures table and items_order table
       returns : true | none
     */
 
-    $this->check_data();
-    if (count($this->errors) > 0) {
-
-        foreach ($this->errors as $error):
-          echo $error;
-        endforeach;
-      exit();
-
-    }else {// if ther is no errors
+    if ($this->check_data(1)) {
 
       global $conn;
 
       # move the files to ther directory
-      $video_name_array = explode(".", $this->video["name"]);
-      $image_name_array = explode(".", $this->thumbnail["name"]);
+      $video_name_array = explode(".", $this->video->name);
+      $image_name_array = explode(".", $this->thumbnail->name);
       $tmp_name_one = $this->token(10) . "." . end($video_name_array);
       $tmp_name_tow = $this->token(10) . "." . end($image_name_array);
-
-      move_uploaded_file($this->video["tmp_name"], $_SERVER["DOCUMENT_ROOT"] . '/dxnln' . lecturesURL . $tmp_name_one);
-      move_uploaded_file($this->thumbnail["tmp_name"], $_SERVER["DOCUMENT_ROOT"] . '/dxnln' . thumbnailsURL . $tmp_name_tow);
+      move_uploaded_file($this->video->tmp_name, $_SERVER["DOCUMENT_ROOT"] . '/dxnln' . lecturesURL . $tmp_name_one);
+      move_uploaded_file($this->thumbnail->tmp_name, $_SERVER["DOCUMENT_ROOT"] . '/dxnln' . thumbnailsURL . $tmp_name_tow);
         
       // Lectures Table Insert
       $stmt = $conn->prepare(
         "INSERT INTO
             lectures (`title`, `description`, `video`, `thumbnail`, `date`)
-      VALUES
+          VALUES
             (:title, :description, :video, :thumbnail, NOW())");
 
-      if ($stmt->execute([
-        ":title"        => $this->title,
-        ":description"  => $this->description,
-        ":video"        => $tmp_name_one,
-        ":thumbnail"    => $tmp_name_tow,
-      ])) {
-
-        // Getting Lecture Id
+      $result = $stmt->execute([":title" => $this->title, ":description" => $this->description, ":video" => $tmp_name_one, ":thumbnail" => $tmp_name_tow]);
+      
+      if ($result) {
         $stmt = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM lectures");
 
         $stmt->execute();
@@ -1537,31 +1548,40 @@ class Lecture extends Item {
             VALUES
                   (:course_id, :item_id, 1, :order)");
 
-          if ($stmt->execute([
-            ":course_id"  => $this->course_id,
-            ":item_id"    => $this->id,
-            ":order"      => $this->order,
-          ])) {
+          $result = $stmt->execute([":course_id" => $this->course_id, ":item_id" => $this->id, ":order" => $this->order]);
 
+          if ($result) {
             return true;
-
-          }else {// Filed To items_order Table Insert
+          }else {
             echo "Error: Items_Order Table Insert";
             exit();
           }
   
-        }else {// Field To "Get Lecture Id After Insert"
+        }else {
           echo "Error: Getting Lecture Id After Insert";
           exit();
         }
 
-      }else {// Field TO "lectures Table Insert"
+      }else {
         echo "Error: Lectures Table Insert";
         exit();
       }
-    }// End "Data Errors" Check
-      
-  }// end of insert_lecture method
+    }else {// if ther is no errors
+
+      foreach ($this->errors as $error):
+        if (is_array($error)) {
+          foreach ($error as $err) {
+            echo "--- " . $err;
+            echo "</br>";
+          }
+        }else {
+          echo $error;
+        }
+      endforeach;
+      return false;
+    }
+
+  }
 
   public static function get_lectures($id = NULL) {
     /*
@@ -1591,7 +1611,7 @@ class Lecture extends Item {
     }else {
       return false;
     }
-  }// end of get_lectures method
+  }
 
   public function get_lecture() {
     /*
@@ -1613,11 +1633,39 @@ class Lecture extends Item {
       return false;
     }
 
-  }// end of get_lecture method
-  
-  public static function delete_lecture($id) {
+  }
+
+  /* ============== Update Methods ============== */
+
+  public function update() {
     /*
-      takes: lectures id
+      returns : array containes lecture info
+    */
+
+    global $conn;
+
+    if ($this->check_data(2)) {
+      $stmt = $conn->prepare(
+        "UPDATE lectures SET title = ?, `description` = ?, `date` = NOW()
+        WHERE lectures.id = ?");
+      $result = $stmt->execute([$this->title, $this->description, $this->id]);
+
+      if ($result) {
+        return true;
+      }else {
+        return false;
+      }
+    }else {
+      return false;
+    }
+
+
+  }
+  
+  /* ============== Delete Methods ============== */
+
+  public function delete_lecture() {
+    /*
       does: removes lecture from lectures table and make sure the items_order.order is right
       returns: true |false
     */
@@ -1628,15 +1676,16 @@ class Lecture extends Item {
       "UPDATE items_order SET `order` = (`order` - 1)
       WHERE `order` > (SELECT items_order.order FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = ?)
       AND items_order.course_id = (SELECT items_order.course_id FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = 1)");
-    $update_order->execute([Lecture::TYPE, $id, $id]);
+    $update_order->execute([self::TYPE, $this->id, $this->id]);
 
-    $order_delete = $conn->prepare("DELETE FROM items_order WHERE item_id = ? AND item_type = 1");
+    $order_delete = $conn->prepare(
+      "DELETE lectures, items_order FROM lectures
+      INNER JOIN items_order ON lectures.id = items_order.item_id
+      WHERE lectures.id = ? AND items_order.item_type = ?");
     
-    $order_delete->execute([$id]);
+    $result = $order_delete->execute([$this->id, self::TYPE]);
 
-    $lecture_delete = $conn->prepare("DELETE FROM lectures WHERE lectures.id = ?");
-
-    if ($lecture_delete->execute([$id])) {
+    if ($result) {
       return true;
     }else {
       return false;
@@ -2086,7 +2135,7 @@ class Exam extends Item {
 
   }// end of Method compare_answers
 
-}// end of class exam
+}
 
 
 
@@ -2160,7 +2209,7 @@ class Answer {
 
   }// end of insert_answer method
 
-}// end of class Answer
+}
 
 
 
@@ -2445,4 +2494,85 @@ class Question {
 
   }// end of method insert_question
 
-}// end of class question
+}
+
+
+class File {
+  const ACCEPTED_IMAGES = [
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "gif",
+  ];
+  const ACCEPTED_VIDEO = [
+    "mp4",
+    "webm"
+  ];
+  const MAX_VIDEO_SIZE = 0.5;// MB/mega byte
+  const MAX_IMAGE_SIZE = 0.5;// MB/mega byte
+  public $name;
+  public $type;
+  public $tmp_name;
+  public $error = 0;
+  public $size;
+  public $errors;
+
+  public function __construct($data) {
+    if (isset($data["name"]) && !empty($data["name"]) && is_string($data["name"])) {
+      $this->name = $data["name"];
+    }
+    if (isset($data["type"]) && !empty($data["type"])) {
+      $this->type = $data["type"];
+    }
+    if (isset($data["tmp_name"]) && !empty($data["tmp_name"]) && is_string($data["tmp_name"])) {
+      $this->tmp_name = $data["tmp_name"];
+    }
+    if (isset($data["error"]) && !empty($data["error"]) && is_numeric($data["error"])) {
+      $this->error = $data["error"];
+    }
+    if (isset($data["size"]) && !empty($data["size"]) && is_numeric($data["size"])) {
+      $this->size = $data["size"];
+    }
+  }
+
+  private function MB($bite) {
+    return ((($bite / 8) / 1024) / 1024);
+  }
+
+  public function validate_data() {
+
+    $errors = [];
+
+    $exploded_file = explode(".", $this->name);
+    if (in_array(end($exploded_file), self::ACCEPTED_VIDEO)) {
+      if ($this->MB($this->size) > self::MAX_VIDEO_SIZE) {
+        $errors[] = "video is larger then max allowed size";
+      }elseif ($this->MB($this->size) == 0) {
+        $errors[] = "video size is 0";
+      }
+    }
+    if (in_array(explode(".", end($exploded_file)), self::ACCEPTED_IMAGES)) {
+      if ($this->MB($this->size) > self::MAX_IMAGE_SIZE) {
+        $errors[] = "image is larger then max allowed size";
+      }elseif ($this->MB($this->size) == 0) {
+        $errors[] = "image size is 0";
+      }
+    }
+    if (!in_array(end($exploded_file), self::ACCEPTED_VIDEO) && !in_array(end($exploded_file), self::ACCEPTED_IMAGES)) {
+      $errors[] = "this file is not allowed";
+    }
+    if ($this->error !== 0) {
+      $errors[] = "something wrong on this file";
+    }
+
+    if (count($errors) > 0) {
+      $this->errors = $errors;
+      return false;
+    }else {
+      return true;
+    }
+
+  }
+
+}

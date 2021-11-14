@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.0.4
+-- version 4.9.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Nov 09, 2021 at 09:10 PM
--- Server version: 10.4.17-MariaDB
--- PHP Version: 8.0.2
+-- Host: 127.0.0.1:3306
+-- Generation Time: Nov 14, 2021 at 07:27 PM
+-- Server version: 10.4.10-MariaDB
+-- PHP Version: 7.3.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -27,10 +28,13 @@ SET time_zone = "+00:00";
 -- Table structure for table `admins`
 --
 
-CREATE TABLE `admins` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+DROP TABLE IF EXISTS `admins`;
+CREATE TABLE IF NOT EXISTS `admins` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `admins`
@@ -45,12 +49,15 @@ INSERT INTO `admins` (`id`, `user_id`) VALUES
 -- Table structure for table `answers`
 --
 
-CREATE TABLE `answers` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `answers`;
+CREATE TABLE IF NOT EXISTS `answers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `question_id` int(11) NOT NULL,
   `answer` varchar(255) NOT NULL,
-  `is_right` tinyint(1) NOT NULL DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `is_right` tinyint(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `question` (`question_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `answers`
@@ -80,13 +87,18 @@ INSERT INTO `answers` (`id`, `question_id`, `answer`, `is_right`) VALUES
 -- Table structure for table `comments`
 --
 
-CREATE TABLE `comments` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `comments`;
+CREATE TABLE IF NOT EXISTS `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `lecture_id` int(11) NOT NULL,
   `comment` varchar(255) NOT NULL,
   `up_comment` int(11) DEFAULT NULL,
-  `date` datetime NOT NULL DEFAULT current_timestamp()
+  `date` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `lecture_comment` (`lecture_id`),
+  KEY `user_comment` (`user_id`),
+  KEY `comment_comment` (`up_comment`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -95,14 +107,16 @@ CREATE TABLE `comments` (
 -- Table structure for table `courses`
 --
 
-CREATE TABLE `courses` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `courses`;
+CREATE TABLE IF NOT EXISTS `courses` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `is_enable` tinyint(1) NOT NULL DEFAULT 1,
   `date` datetime DEFAULT current_timestamp(),
-  `parent` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `parent` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `courses`
@@ -111,7 +125,8 @@ CREATE TABLE `courses` (
 INSERT INTO `courses` (`id`, `title`, `description`, `is_enable`, `date`, `parent`) VALUES
 (1, 'testing course', 'test', 1, '2021-06-19 11:19:39', NULL),
 (2, 'course 2', 'the second course', 1, '2021-07-05 14:08:37', NULL),
-(3, 'الدورة الثالثة', 'هذه هي الدورة الثاثلة', 1, '2021-07-08 15:18:02', NULL);
+(3, 'الدورة الثالثة', 'هذه هي الدورة الثاثلة', 1, '2021-07-08 15:18:02', NULL),
+(4, 'testtt', 'testt', 2, '2021-11-06 19:40:31', NULL);
 
 -- --------------------------------------------------------
 
@@ -119,13 +134,15 @@ INSERT INTO `courses` (`id`, `title`, `description`, `is_enable`, `date`, `paren
 -- Table structure for table `exams`
 --
 
-CREATE TABLE `exams` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `exams`;
+CREATE TABLE IF NOT EXISTS `exams` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `exam_percent` int(11) NOT NULL,
-  `date` date NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `date` date NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `exams`
@@ -141,12 +158,16 @@ INSERT INTO `exams` (`id`, `title`, `description`, `exam_percent`, `date`) VALUE
 -- Table structure for table `exams_answers`
 --
 
-CREATE TABLE `exams_answers` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `exams_answers`;
+CREATE TABLE IF NOT EXISTS `exams_answers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `exam_take` int(11) NOT NULL,
   `question_id` int(11) NOT NULL,
-  `right` tinyint(1) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `right` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `exam_take_id` (`exam_take`),
+  KEY `question_id` (`question_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `exams_answers`
@@ -172,12 +193,16 @@ INSERT INTO `exams_answers` (`id`, `exam_take`, `question_id`, `right`) VALUES
 -- Table structure for table `exam_take`
 --
 
-CREATE TABLE `exam_take` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `exam_take`;
+CREATE TABLE IF NOT EXISTS `exam_take` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `exam_id` int(11) NOT NULL,
   `student_id` int(11) NOT NULL,
-  `date` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `date` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `student` (`student_id`),
+  KEY `exam_id` (`exam_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `exam_take`
@@ -213,12 +238,16 @@ INSERT INTO `exam_take` (`id`, `exam_id`, `student_id`, `date`) VALUES
 -- Table structure for table `groups`
 --
 
-CREATE TABLE `groups` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `groups`;
+CREATE TABLE IF NOT EXISTS `groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `teacher_id` int(11) NOT NULL,
   `path_id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `teacher` (`teacher_id`),
+  KEY `path_id` (`path_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `groups`
@@ -234,13 +263,16 @@ INSERT INTO `groups` (`id`, `teacher_id`, `path_id`, `name`) VALUES
 -- Table structure for table `items_order`
 --
 
-CREATE TABLE `items_order` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `items_order`;
+CREATE TABLE IF NOT EXISTS `items_order` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `course_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
   `item_type` tinyint(4) NOT NULL,
-  `order` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `order` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `items_order_courses` (`course_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `items_order`
@@ -249,7 +281,9 @@ CREATE TABLE `items_order` (
 INSERT INTO `items_order` (`id`, `course_id`, `item_id`, `item_type`, `order`) VALUES
 (2, 1, 1, 2, 1),
 (8, 2, 7, 1, 1),
-(15, 2, 8, 2, 2);
+(15, 2, 8, 2, 2),
+(18, 4, 14, 1, 1),
+(19, 4, 15, 1, 2);
 
 -- --------------------------------------------------------
 
@@ -257,24 +291,25 @@ INSERT INTO `items_order` (`id`, `course_id`, `item_id`, `item_type`, `order`) V
 -- Table structure for table `lectures`
 --
 
-CREATE TABLE `lectures` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `lectures`;
+CREATE TABLE IF NOT EXISTS `lectures` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `video` varchar(255) DEFAULT NULL,
   `thumbnail` varchar(255) DEFAULT NULL,
-  `date` date NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `date` date NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `lectures`
 --
 
 INSERT INTO `lectures` (`id`, `title`, `description`, `video`, `thumbnail`, `date`) VALUES
-(7, 'lecture 2', 'this is testing lecture', 'Snn6OmJenuh.mp4', 'Koala.jpg', '2021-07-05'),
-(12, 'lectures 3', 'afdasf asf ', 'p5kZrhBIJaZ.mp4', 'Koala.jpg', '2021-07-09'),
-(14, 'teasttt', 'test', 'q54UrX1HwwW.mp4', 'Koala.jpg', '2021-11-06'),
-(15, 'testatt', 'testaatt', 'BoEg0YLQrHz.mp4', 'Koala.jpg', '2021-11-06');
+(7, 'lecture 1', 'tesst', 'Snn6OmJenuh.mp4', '9EmYEaHXUMz.jpg', '2021-11-14'),
+(14, 'test 1', 'test 1', 'q54UrX1HwwW.mp4', 'wl6faUozZOG.jpg', '2021-11-14'),
+(15, 'test 2', 'test 2', 'BoEg0YLQrHz.mp4', 'uqkfM3hB1b9.jpg', '2021-11-14');
 
 -- --------------------------------------------------------
 
@@ -282,8 +317,9 @@ INSERT INTO `lectures` (`id`, `title`, `description`, `video`, `thumbnail`, `dat
 -- Table structure for table `pages`
 --
 
-CREATE TABLE `pages` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `pages`;
+CREATE TABLE IF NOT EXISTS `pages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `title` varchar(255) NOT NULL,
   `meta` varchar(255) DEFAULT NULL,
@@ -295,8 +331,9 @@ CREATE TABLE `pages` (
   `description` text DEFAULT NULL,
   `mini_description` text DEFAULT NULL,
   `featured_img` varchar(255) DEFAULT NULL,
-  `language` varchar(5) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `language` varchar(5) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `pages`
@@ -324,7 +361,7 @@ INSERT INTO `pages` (`id`, `name`, `title`, `meta`, `type`, `components`, `argum
 (22, 'exam-result', 'show exam result', NULL, 'login', 1, 0, 'exam-result.php', NULL, NULL, NULL, NULL, 'ar'),
 (23, 'course', 'show course', NULL, 'login', 1, 1, 'course-show.php', NULL, NULL, NULL, NULL, 'ar'),
 (24, 'manage-course', 'Manage Courses', NULL, 'manage', 1, 0, 'manage-course.php', NULL, NULL, NULL, NULL, 'ar'),
-(25, 'course-delete', 'course delete', NULL, 'manage', 1, 1, 'course-delete.php', NULL, NULL, NULL, NULL, 'ar');
+(25, 'manage-group', '', NULL, 'manage', 1, 0, 'groups-manage.php', NULL, NULL, NULL, NULL, 'ar');
 
 -- --------------------------------------------------------
 
@@ -332,13 +369,16 @@ INSERT INTO `pages` (`id`, `name`, `title`, `meta`, `type`, `components`, `argum
 -- Table structure for table `paths`
 --
 
-CREATE TABLE `paths` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `paths`;
+CREATE TABLE IF NOT EXISTS `paths` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `teacher_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `last_modification` date NOT NULL DEFAULT current_timestamp(),
-  `is_main` float NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `is_main` float NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `teachers_paths` (`teacher_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `paths`
@@ -354,12 +394,16 @@ INSERT INTO `paths` (`id`, `teacher_id`, `name`, `last_modification`, `is_main`)
 -- Table structure for table `paths_courses`
 --
 
-CREATE TABLE `paths_courses` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `paths_courses`;
+CREATE TABLE IF NOT EXISTS `paths_courses` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `path_id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
-  `order` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `order` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `paths` (`path_id`),
+  KEY `course_studentpaths` (`course_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `paths_courses`
@@ -378,12 +422,14 @@ INSERT INTO `paths_courses` (`id`, `path_id`, `course_id`, `order`) VALUES
 -- Table structure for table `permissions`
 --
 
-CREATE TABLE `permissions` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `permissions`;
+CREATE TABLE IF NOT EXISTS `permissions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `value` varchar(8) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `note` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `note` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `permissions`
@@ -405,21 +451,24 @@ INSERT INTO `permissions` (`id`, `value`, `name`, `note`) VALUES
 -- Table structure for table `questions`
 --
 
-CREATE TABLE `questions` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `questions`;
+CREATE TABLE IF NOT EXISTS `questions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `exam_id` int(11) NOT NULL,
   `question` varchar(255) NOT NULL,
   `important` int(11) NOT NULL,
   `order` int(11) NOT NULL,
-  `multible_option` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `multible_option` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `exam` (`exam_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `questions`
 --
 
 INSERT INTO `questions` (`id`, `exam_id`, `question`, `important`, `order`, `multible_option`) VALUES
-(4, 1, 'QuestionQuestion', 0, 2, 2),
+(4, 1, 'QuestionQuestion', 1, 2, 2),
 (7, 1, 'Question 1', 0, 1, 1),
 (9, 8, 'not a question', 0, 1, 2),
 (10, 8, ' adsas asd asd Question', 0, 2, 1),
@@ -432,10 +481,13 @@ INSERT INTO `questions` (`id`, `exam_id`, `question`, `important`, `order`, `mul
 -- Table structure for table `students`
 --
 
-CREATE TABLE `students` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+DROP TABLE IF EXISTS `students`;
+CREATE TABLE IF NOT EXISTS `students` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `students`
@@ -451,11 +503,15 @@ INSERT INTO `students` (`id`, `user_id`) VALUES
 -- Table structure for table `students_groups`
 --
 
-CREATE TABLE `students_groups` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `students_groups`;
+CREATE TABLE IF NOT EXISTS `students_groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `student_id` int(11) NOT NULL,
-  `group_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `group_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `groups_students` (`student_id`),
+  KEY `groups_groups` (`group_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `students_groups`
@@ -471,11 +527,15 @@ INSERT INTO `students_groups` (`id`, `student_id`, `group_id`) VALUES
 -- Table structure for table `student_pass`
 --
 
-CREATE TABLE `student_pass` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `student_pass`;
+CREATE TABLE IF NOT EXISTS `student_pass` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `student_id` int(11) NOT NULL,
-  `item_order_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `item_order_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `student_id` (`student_id`),
+  KEY `item_order` (`item_order_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `student_pass`
@@ -490,10 +550,13 @@ INSERT INTO `student_pass` (`id`, `student_id`, `item_order_id`) VALUES
 -- Table structure for table `teachers`
 --
 
-CREATE TABLE `teachers` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+DROP TABLE IF EXISTS `teachers`;
+CREATE TABLE IF NOT EXISTS `teachers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `teachers`
@@ -509,13 +572,19 @@ INSERT INTO `teachers` (`id`, `user_id`) VALUES
 -- Table structure for table `teachers_courses`
 --
 
-CREATE TABLE `teachers_courses` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `teachers_courses`;
+CREATE TABLE IF NOT EXISTS `teachers_courses` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `course_id` int(11) NOT NULL,
   `teacher_id` int(11) NOT NULL,
   `permission_id` int(11) NOT NULL,
-  `permission_giver` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `permission_giver` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `teachers` (`teacher_id`),
+  KEY `courses` (`course_id`),
+  KEY `permmision` (`permission_id`),
+  KEY `permission_giver` (`permission_giver`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `teachers_courses`
@@ -524,6 +593,7 @@ CREATE TABLE `teachers_courses` (
 INSERT INTO `teachers_courses` (`id`, `course_id`, `teacher_id`, `permission_id`, `permission_giver`) VALUES
 (2, 2, 2, 1, 2),
 (3, 1, 2, 1, 2),
+(4, 4, 2, 1, 2),
 (5, 3, 3, 1, 3);
 
 -- --------------------------------------------------------
@@ -532,8 +602,9 @@ INSERT INTO `teachers_courses` (`id`, `course_id`, `teacher_id`, `permission_id`
 -- Table structure for table `users`
 --
 
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) DEFAULT NULL,
   `fullname` varchar(255) DEFAULT NULL,
   `dxnid` varchar(255) NOT NULL,
@@ -548,8 +619,11 @@ CREATE TABLE `users` (
   `gander` tinyint(1) NOT NULL,
   `image` varchar(255) DEFAULT NULL,
   `registerdate` date NOT NULL DEFAULT current_timestamp(),
-  `thumbimage` varchar(255) DEFAULT 'default_user.jpg'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `thumbimage` varchar(255) DEFAULT 'default_user.jpg',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `dxnid` (`dxnid`),
+  KEY `teacher_up_line` (`dxn_upline`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `users`
@@ -561,294 +635,6 @@ INSERT INTO `users` (`id`, `username`, `fullname`, `dxnid`, `dxn_upline`, `passw
 (3, 'teacher', 'teacher teacher', '222', NULL, '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 'teacher@test.test', '123456789', NULL, NULL, NULL, NULL, 1, NULL, '2021-05-10', 'default_user.jpg'),
 (4, 'student 2', 'student 2  student 2 ', '444', NULL, '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 'student2@gmail.com', '09876658123', 'istanbul', NULL, 'student', 'moon, 13 streat, third way at the right', 1, NULL, '2021-07-07', 'default_user.jpg'),
 (19, 'teacher2', 'teacher', '555', '222', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 'teacher2@gmail.com', NULL, NULL, '2021-10-19', NULL, NULL, 1, NULL, '2021-10-19', 'default_user.jpg');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `admins`
---
-ALTER TABLE `admins`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
-
---
--- Indexes for table `answers`
---
-ALTER TABLE `answers`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `question` (`question_id`);
-
---
--- Indexes for table `comments`
---
-ALTER TABLE `comments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `lecture_comment` (`lecture_id`),
-  ADD KEY `user_comment` (`user_id`),
-  ADD KEY `comment_comment` (`up_comment`);
-
---
--- Indexes for table `courses`
---
-ALTER TABLE `courses`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `exams`
---
-ALTER TABLE `exams`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `exams_answers`
---
-ALTER TABLE `exams_answers`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `exam_take_id` (`exam_take`),
-  ADD KEY `question_id` (`question_id`);
-
---
--- Indexes for table `exam_take`
---
-ALTER TABLE `exam_take`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `student` (`student_id`),
-  ADD KEY `exam_id` (`exam_id`);
-
---
--- Indexes for table `groups`
---
-ALTER TABLE `groups`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `teacher` (`teacher_id`),
-  ADD KEY `path_id` (`path_id`);
-
---
--- Indexes for table `items_order`
---
-ALTER TABLE `items_order`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `items_order_courses` (`course_id`);
-
---
--- Indexes for table `lectures`
---
-ALTER TABLE `lectures`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `pages`
---
-ALTER TABLE `pages`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `paths`
---
-ALTER TABLE `paths`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `teachers_paths` (`teacher_id`);
-
---
--- Indexes for table `paths_courses`
---
-ALTER TABLE `paths_courses`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `paths` (`path_id`),
-  ADD KEY `course_studentpaths` (`course_id`);
-
---
--- Indexes for table `permissions`
---
-ALTER TABLE `permissions`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `questions`
---
-ALTER TABLE `questions`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `exam` (`exam_id`);
-
---
--- Indexes for table `students`
---
-ALTER TABLE `students`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
-
---
--- Indexes for table `students_groups`
---
-ALTER TABLE `students_groups`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `groups_students` (`student_id`),
-  ADD KEY `groups_groups` (`group_id`);
-
---
--- Indexes for table `student_pass`
---
-ALTER TABLE `student_pass`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `student_id` (`student_id`),
-  ADD KEY `item_order` (`item_order_id`);
-
---
--- Indexes for table `teachers`
---
-ALTER TABLE `teachers`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
-
---
--- Indexes for table `teachers_courses`
---
-ALTER TABLE `teachers_courses`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `teachers` (`teacher_id`),
-  ADD KEY `courses` (`course_id`),
-  ADD KEY `permmision` (`permission_id`),
-  ADD KEY `permission_giver` (`permission_giver`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `dxnid` (`dxnid`),
-  ADD KEY `teacher_up_line` (`dxn_upline`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `admins`
---
-ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `answers`
---
-ALTER TABLE `answers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
-
---
--- AUTO_INCREMENT for table `comments`
---
-ALTER TABLE `comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `courses`
---
-ALTER TABLE `courses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `exams`
---
-ALTER TABLE `exams`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `exams_answers`
---
-ALTER TABLE `exams_answers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
--- AUTO_INCREMENT for table `exam_take`
---
-ALTER TABLE `exam_take`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
-
---
--- AUTO_INCREMENT for table `groups`
---
-ALTER TABLE `groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `items_order`
---
-ALTER TABLE `items_order`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
-
---
--- AUTO_INCREMENT for table `lectures`
---
-ALTER TABLE `lectures`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
-
---
--- AUTO_INCREMENT for table `pages`
---
-ALTER TABLE `pages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
-
---
--- AUTO_INCREMENT for table `paths`
---
-ALTER TABLE `paths`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `paths_courses`
---
-ALTER TABLE `paths_courses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `permissions`
---
-ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
-
---
--- AUTO_INCREMENT for table `questions`
---
-ALTER TABLE `questions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
--- AUTO_INCREMENT for table `students`
---
-ALTER TABLE `students`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `students_groups`
---
-ALTER TABLE `students_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `student_pass`
---
-ALTER TABLE `student_pass`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT for table `teachers`
---
-ALTER TABLE `teachers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `teachers_courses`
---
-ALTER TABLE `teachers_courses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- Constraints for dumped tables
