@@ -6,10 +6,10 @@
         "course_id"     => intval($URL[2]),
         "title"         => $_POST["title"],
         "description"   => $_POST["desc"],
-        "video"         => $_FILES["video"],
-        "thumbnail"     => $_FILES["thumb"],
+        "video"         => new File($_FILES["video"]),
+        "thumbnail"     => new File($_FILES["thumb"]),
       ];
-  
+
       $lecture = new Lecture();
       $lecture->set_data($lecture_data);
 
@@ -51,7 +51,7 @@
             <label class="form-label" for="video">Video</label>
             <input type="file" class="form-control" id="video" name="video"
             accept="
-            <?php foreach (Lecture::ACCEPTED_VIDEO as $ext):
+            <?php foreach (File::ACCEPTED_VIDEO as $ext):
               echo "." . $ext . ", ";
             endforeach;?>"
             />
@@ -62,7 +62,7 @@
             <label class="form-label" for="thumb">Thumbnail</label>
             <input type="file" class="form-control" id="thumb" name="thumb"
             accept="
-            <?php foreach (Lecture::ACCEPTED_IMAGE as $ext):
+            <?php foreach (File::ACCEPTED_IMAGES as $ext):
               echo "." . $ext . ", ";
             endforeach;?>"
             />

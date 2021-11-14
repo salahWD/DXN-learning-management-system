@@ -1,17 +1,8 @@
 <?php
-  
-  if ($_SERVER["REQUEST_METHOD"] == "POST"):
-    $lecture = new Lecture();
-    $lecture->set_data($_POST);
-    echo "<pre>";
-    print_r($lecture);
-    echo "</pre>";
-  endif;
-
+  # Get lecture & course data  
   $lecture    = new Lecture();
   $lecture->id = $URL[2];
   $lecture->set_data($lecture->get_lecture());
-
   $course = new Course();
   $course->id = $lecture->course_id;
 
@@ -29,6 +20,29 @@
       <?php
       exit();
     endif;
+  endif;
+
+  if ($_SERVER["REQUEST_METHOD"] == "POST"):
+
+    $lecture->set_data($_POST);
+    $result = $lecture->update();
+
+    if ($result) {
+      header("Location: " . theURL . language . "/manage-course/" . $course->id);
+      exit();
+    }else {?>
+       <div class="container">
+         <div class="alert alert-danger text-center mt-4">
+           <h3 class="title">حدث خطأ </h3>
+           <p>يبدو أنه قد حدث خطأ اثناء تعديل الحلقة, يرجى المحاولة لاحقا</p>
+           <?php foreach ($lecture->errors as $err):?>
+              <span class="error d-block"><?php echo $err;?></span>
+           <?php endforeach;?>
+         </div> 
+       </div>
+       <?php
+      exit();
+    }
   endif;
     
   $course->items = $course->get_items_id_name();
