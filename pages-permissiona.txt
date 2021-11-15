@@ -1,0 +1,20 @@
+page type = what this page require from the user.
+pages types = [
+  login               = require login
+  teacher             = require login and teacher permission
+  adimn               = require login and admin permission
+  student             = require login and student permission
+  main                = any body can enter
+  manage              = only teachers and admins can enter this pages
+]
+
+=================================================================================================
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+=================================================================================================
+
+page component = do you want to include head or header or footer.
+pages component = [
+  1         = include head & header & file & footer
+  2         = include head & file
+  3         = include file
+]

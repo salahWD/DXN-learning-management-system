@@ -1,0 +1,15 @@
+﻿flow charts
+================
+
+- login <<
+- take exam <
+- Promote Student <<
+- finish a lecture <<
+- student activity
+- create course <<
+- create lectures <<
+- create exams <<
+- create questions and ansers <<
+- تنفيذ خوارزمية اختيار العنصر لطالب
+- عمل دالة تأخذ [course_id, user_id] وتعيد [item_object] فيها قيمه الدرس اذا كان مفتوحا او مقفلا او منتهيا
+- همل دالة تعيد اذا كان الكورس مقفل او مفتوح حسب العناصر اذا كانت كلها منهية فهو مفتوح والا فهو مقفل حتى ينهي الذي قبله
