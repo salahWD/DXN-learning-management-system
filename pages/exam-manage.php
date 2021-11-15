@@ -1,6 +1,5 @@
 <?php
 // resume from =====> delete course => [delete all of it's items specialy exams]
-// and make [manage-answers.js] page completly OOP
 $order        = $URL[3];
 
 $exam         = new Exam();
@@ -10,7 +9,6 @@ $exam->set_data($exam->get_exam($exam->id));
 $course       = new Course();
 $course->id   = $exam->course_id;
 
-// check acciblety
 if ($user::USER_TYPE == 2):
   $course->permission = $course->get_teacher_permission($user->teacher_id);
   if (!$course->check_permission("UPDATE")):?>
@@ -33,56 +31,59 @@ endif;
     
 if ($order == "add") {// there is add tag
   
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-      $question = new Question();
+    $question = new Question();
+  
+    $is_multiple = isset($_POST["is_multiple"]) ? 2: 1;
+
+    // Create Array Of Answer Objects
+    if (isset($_POST["question"]) && (isset($_POST["answer"]) || isset($_POST["update"]))) {
+
+      $answers = [];
+      foreach($_POST["answer"] as $ans_obj) {
+        $obj = new Answer();
+        $obj->set_data($ans_obj);
+        array_push($answers, $obj);
+      }
+
+      $info = [
+        "exam_id"         => $exam->id,
+        "question"        => $_POST["question"],
+        "answers"         => $answers,
+        "multible_option" => $is_multiple,
+      ];
     
-      $is_multiple = isset($_POST["is_multiple"]) ? 2: 1;
-
-      // Create Array Of Answer Objects
-      if (isset($_POST["question"]) && isset($_POST["grade"]) && (isset($_POST["answer"]) || isset($_POST["update"]))) {
-
-        $answers = [];
-        foreach($_POST["answer"] as $ans_obj) {
-          $obj = new Answer();
-          $obj->set_data($ans_obj);
-          array_push($answers, $obj);
-        }
-
-        $info = [
-          "exam_id"         => $exam->id,
-          "question"        => $_POST["question"],
-          "grade"           => $_POST["grade"],
-          "answers"         => $answers,
-          "multible_option" => $is_multiple,
-        ];
+      $question->set_data($info);
       
-        $question->set_data($info);
-        
-        if ($question->insert_question()) {
-          header("Location: " . theURL . language . "/exam-manage/" . $course->id . "/" . $exam->id . "/add");
-          exit();
-        }else {
-          echo "Error: inserting";// error
-          exit();
-        }
-
+      if ($question->insert_question()) {
+        header("Location: " . theURL . language . "/exam-manage/" . $course->id . "/" . $exam->id . "/add");
+        exit();
       }else {
-        echo "Error: info is not full";// error
+        echo "Error: inserting";// error
         exit();
       }
-    }// end "if post" check
-  
+
+    }else {
+      echo "Error: info is not full";// error
+      exit();
+    }
+  }
+
+
+}elseif ($order == "del") {
+  if ($_SERVEER["REQUEST_METHOD"] == "POST") {
+    // delete the question and his answers
+  }
 }else {// if there is question Order 
 
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
   
     $question = new Question(); 
-  
     $is_multiple = isset($_POST["is_multiple"]) ? 2: 1;
-    $answers = [];
-    $update = [];
   
+    
+    $answers = [];
     if (isset($_POST["answer"]) && !empty($_POST["answer"]) && count($_POST["answer"]) > 0) {
       foreach ($_POST["answer"] as $answer) {
         $obj = new Answer();
@@ -90,7 +91,8 @@ if ($order == "add") {// there is add tag
         array_push($answers, $obj);
       }
     }
-
+    
+    $update = [];
     if (isset($_POST["update"]) && !empty($_POST["update"]) && count($_POST["update"]) > 0) {
       foreach ($_POST["update"] as $upd) {
         $obj = new Answer();
@@ -106,7 +108,6 @@ if ($order == "add") {// there is add tag
       "id"              => $_POST["quest_id"],
       "exam_id"         => $exam->id,
       "question"        => $_POST["question"],
-      "grade"           => $_POST["grade"],
       "update"          => $update,
       "answers"         => $answers,
       "order"           => 1,
@@ -126,13 +127,21 @@ if ($order == "add") {// there is add tag
 
   $quest  = new Question();
 
-  // Set Question Data
-  if ($data = $quest->get_question_by_order($exam->id, $order)) {
+  $data = $quest->get_question_by_order($exam->id, $order);
+
+  if (!empty($data)):
     $quest->set_data($data);
-  }else {
-    echo "<h1>Error: can't find question with this order</h1>";// error
+
+  else:?>
+    <div class="container">
+      <div class="alert alert-danger mt-4 text-center">
+        <h3 class="title">لا يوجد سؤال بهذا الترتيب</h3>
+        <p>يبدو انه لا يوجد سؤال بالترتيب المطلوب</p>
+      </div>
+    </div>
+    <?php
     exit();
-  }
+  endif;
 
 }
   ?>
@@ -200,7 +209,8 @@ if ($order == "add") {// there is add tag
       </div>
 
       <div class="col-md-1">
-        <button id="add-answer" class="btn btn-primary w-100"><i class="fa fa-lg fa-plus"></i></button>
+        <button data-target="<?php echo theURL . language . "/exam-manage/" . $exam->id;?>" id="delete-question" class="btn btn-danger w-100"><i class="fa fa-lg fa-trash"></i></button>
+        <button id="add-answer" class="btn btn-primary mt-2 w-100"><i class="fa fa-lg fa-plus"></i></button>
       </div>
       <input type="submit" class="btn mt-4 btn-primary" value="submit">
     </div>

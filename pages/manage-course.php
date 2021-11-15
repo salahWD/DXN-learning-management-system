@@ -35,7 +35,46 @@
         <?php echo $course->title?>
       </h1>
       <div style="float: right">
-        <a href="<?php echo theURL . language . "/lecture-add/" . $course->id;?>" class="btn btn-primary"><i class="fa fa-fw fa-plus"></i></a>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItem">
+          <i class="fa fa-plus"></i>
+        </button>
+        
+        <div class="modal fade" id="addItem" tabindex="-1" aria-labelledby="addItem" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+
+              <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">نوع المادة</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body item-type-container">
+                <div class="row">
+                  <div class="col">
+                    <div class="card item-type" data-page="lecture-add/<?php echo $course->id?>">
+                      <div class="card-body">
+                        <h5 class="card-title">حلقة</h5>
+                        <p class="card-text">مقطع فيديو يشرح موضوع معين ضمن الدورة</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="card item-type" data-page="exam-add/<?php echo $course->id?>">
+                      <div class="card-body">
+                        <h5 class="card-title">اختبار</h5>
+                        <p class="card-text">مجموعة من الاسئلة و الخيارات لأختبار مستوى الطالب</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">اغلاق</button>
+                <a href="" class="btn btn-primary" id="sendBtn">حفظ</a>
+              </div>
+
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="row">
@@ -57,12 +96,12 @@
                 <?php echo $item->title;?>
               </div>
               <?php if ($item->show_status == 0):?>
-                <img src="<?php echo ($item::TYPE == 1) ? theURL . thumbnailsURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
+                <img src="<?php echo ($item::TYPE == 1) ? theURL . imagesURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
                   alt="leecture thumbnail"
                   class="card-img-top">
               <?php else:?>
                 <a href="<?php echo theURL . language . "/view/" . $course->id . "/" . $item->order?>">
-                  <img src="<?php echo ($item::TYPE == 1) ? theURL . thumbnailsURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
+                  <img src="<?php echo ($item::TYPE == 1) ? theURL . imagesURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
                       alt="leecture thumbnail"
                       class="card-img-top">
                 </a>
