@@ -31,47 +31,45 @@
 			<div class="card-body">
 				<h3 class="card-title">اضافة مادة</h3>
 				<hr>
-					<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItem">
-						<i class="fa fa-plus"></i>
-					</button>
+				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItem">
+					<i class="fa fa-plus"></i>
+				</button>
+				<div class="modal fade" id="addItem" tabindex="-1" aria-labelledby="addItem" aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
 
-					<div class="modal fade" id="addItem" tabindex="-1" aria-labelledby="addItem" aria-hidden="true">
-						<div class="modal-dialog">
-							<div class="modal-content">
-
-								<div class="modal-header">
-									<h4 class="modal-title" id="exampleModalLabel">نوع المادة</h4>
-									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-								</div>
-								<div class="modal-body item-type-container">
-									<div class="row">
-										<div class="col">
-											<div class="card item-type" data-page="lecture-add">
-												<div class="card-body">
-													<h5 class="card-title">حلقة</h5>
-													<p class="card-text">مقطع فيديو يشرح موضوع معين ضمن الدورة</p>
-												</div>
+							<div class="modal-header">
+								<h4 class="modal-title">نوع المادة</h4>
+								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							</div>
+							<div class="modal-body item-type-container">
+								<div class="row">
+									<div class="col">
+										<div class="card item-type" data-page="lecture-add">
+											<div class="card-body">
+												<h5 class="card-title">حلقة</h5>
+												<p class="card-text">مقطع فيديو يشرح موضوع معين ضمن الدورة</p>
 											</div>
 										</div>
-										<div class="col">
-											<div class="card item-type" data-page="exam-add">
-												<div class="card-body">
-													<h5 class="card-title">اختبار</h5>
-													<p class="card-text">مجموعة من الاسئلة و الخيارات لأختبار مستوى الطالب</p>
-												</div>
+									</div>
+									<div class="col">
+										<div class="card item-type" data-page="exam-add">
+											<div class="card-body">
+												<h5 class="card-title">اختبار</h5>
+												<p class="card-text">مجموعة من الاسئلة و الخيارات لأختبار مستوى الطالب</p>
 											</div>
 										</div>
 									</div>
 								</div>
-								<div class="modal-footer">
-									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">اغلاق</button>
-									<a href="" class="btn btn-primary" id="sendBtn">حفظ</a>
-								</div>
-
 							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">اغلاق</button>
+								<a href="" class="btn btn-primary" id="sendBtn">حفظ</a>
+							</div>
+
 						</div>
 					</div>
-
+				</div>
 			</div>
 		</div>
 	</div>

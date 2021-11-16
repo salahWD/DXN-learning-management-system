@@ -1,29 +1,30 @@
-const checkBtn  = document.getElementById(`send`);
-let   answers   = document.querySelectorAll(`.question-show`);
+$(document).ready(function(){
 
-function reqListener () {
-  console.log(this.responseText);
-}
+  const checkBtn  = $(`#send`);
+  let   answers   = $(`.question-show`);
 
-checkBtn.addEventListener("click", function () {
-  answers.forEach(inp => {
-    if (inp.querySelectorAll(`input:checked`).length == 0) {
-      inp.classList.add("border-danger", "border", "rounded");
-      inp.querySelector(`.question-text`).classList.add("text-danger");
-    }else {
-      inp.classList.remove("border-danger");
-      inp.querySelector(`.question-text`).classList.remove("text-danger");
-    }
-  });
-
-  if (document.querySelectorAll(`.question-show.border-danger`).length > 0) {
-    window.scroll({
-      top: document.querySelectorAll(`.question-show.border-danger`)[0].offsetTop - 30,
-      left: 100,
-      behavior: 'smooth'
+  checkBtn.click(function () {
+    answers.each(function (i, inp) {
+      
+      if (inp.querySelectorAll("input").length == 0) {
+        inp.addClass("border-danger", "border", "rounded");
+        $("this").find(`.question-text`).addClass("text-danger");
+      }else {
+        inp.removeClass("border-danger");
+        $("this").find(`.question-text`).removeClass("text-danger");
+      }
     });
-  }else {
-    document.forms[0].submit();
-  }
 
+    if ($(`.question-show.border-danger`).length > 0) {
+      window.scroll({
+        top: $(`.question-show.border-danger`)[0].offset().top - 40,
+        left: 100,
+        behavior: 'smooth'
+      });
+    }else {
+      // document.forms[0]
+
+    }
+
+  });
 });

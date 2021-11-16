@@ -57,7 +57,7 @@ if ($order == "add") {// there is add tag
       $question->set_data($info);
       
       if ($question->insert_question()) {
-        header("Location: " . theURL . language . "/exam-manage/" . $course->id . "/" . $exam->id . "/add");
+        header("Location: " . theURL . language . "/exam-manage/" . $exam->id . "/add");
         exit();
       }else {
         echo "Error: inserting";// error
@@ -71,18 +71,13 @@ if ($order == "add") {// there is add tag
   }
 
 
-}elseif ($order == "del") {
-  if ($_SERVEER["REQUEST_METHOD"] == "POST") {
-    // delete the question and his answers
-  }
 }else {// if there is question Order 
 
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
   
     $question = new Question(); 
     $is_multiple = isset($_POST["is_multiple"]) ? 2: 1;
-  
-    
+
     $answers = [];
     if (isset($_POST["answer"]) && !empty($_POST["answer"]) && count($_POST["answer"]) > 0) {
       foreach ($_POST["answer"] as $answer) {
@@ -124,6 +119,25 @@ if ($order == "add") {// there is add tag
     exit();
     
   }// end post order
+
+  if (isset($URL[4]) && $URL[4] == "del") {
+
+    $question = new Question();
+    $result = $question->delete_question_by_order($exam->id, $order);
+
+    if ($result):
+      header("Location: " . theURL . language . "/exam-manage/" . $exam->id . "/add");
+    else:?>
+      <div class="container">
+        <div class="alert alert-danger mt-4 text-center">
+          <h3 class="title">يتعذر الحذف</h3>
+          <p>يبدو ان هناك خطأ يمنع حذف هذا السؤال.</p>
+        </div>
+      </div>
+      <?php
+    endif;
+    exit();
+  }
 
   $quest  = new Question();
 
@@ -209,7 +223,27 @@ if ($order == "add") {// there is add tag
       </div>
 
       <div class="col-md-1">
-        <button data-target="<?php echo theURL . language . "/exam-manage/" . $exam->id;?>" id="delete-question" class="btn btn-danger w-100"><i class="fa fa-lg fa-trash"></i></button>
+        <?php if (is_numeric($order)):?>
+        <button data-bs-target="#deleteItem" data-bs-toggle="modal" class="btn btn-danger w-100"><i class="fa fa-lg fa-trash"></i></button>
+        <div class="modal fade" id="deleteItem" tabindex="-1" aria-labelledby="addItem" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header border-bottom-danger">
+                <h4 class="modal-title">تأكيد</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>هل أنت متأكد من حذف هذا السؤال نهائيا ؟</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">اغلاق</button>
+                <a href="<?php echo theURL . language . "/exam-manage/" . $exam->id . "/" . $order . "/del";?>" class="btn btn-danger">حذف</a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <?php endif;?>
         <button id="add-answer" class="btn btn-primary mt-2 w-100"><i class="fa fa-lg fa-plus"></i></button>
       </div>
       <input type="submit" class="btn mt-4 btn-primary" value="submit">

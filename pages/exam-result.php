@@ -1,6 +1,6 @@
 <?php
 
-if (isset($_SESSION["exam_result"]) && !empty($_SESSION["exam_result"])) {
+if (isset($_SESSION["exam_result"]) && !empty($_SESSION["exam_result"])):
   $result = $_SESSION["exam_result"];?>
   <div class="container">
     <h2 class="text-center mb-3"><?php echo $result["exam_title"];?></h2>
@@ -16,7 +16,7 @@ if (isset($_SESSION["exam_result"]) && !empty($_SESSION["exam_result"])) {
       </div>
     <?php endif;?>
   </div>
-<?php }else {?>
+<?php else:?>
 
   <div class="container">
     <div class="alert alert-danger text-center mt-4">
@@ -25,4 +25,4 @@ if (isset($_SESSION["exam_result"]) && !empty($_SESSION["exam_result"])) {
     </div>
   </div>
 
-<?php }?>
+<?php endif;?>

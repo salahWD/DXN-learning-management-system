@@ -29,7 +29,7 @@
   <div class="row">
     <div class="col-md-2"></div>
     <div class="col-md-8 mt-md-5">
-      <form action="<?php echo theURL . language . '/exam-create/' . $URL[2];?>" method="POST" enctype="multipart/form-data">
+      <form action="<?php echo theURL . language . '/exam-add/' . $URL[2];?>" method="POST" enctype="multipart/form-data">
         
         <!-- Title input -->
         <div class="form-outline mb-4">

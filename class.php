@@ -200,7 +200,6 @@ class Student extends User {
   const USER_TYPE = 3;
 
 
-  /*=========== Process Methods ===========*/
   /*=========== Create Methods ===========*/
 
   public function create_student() {
@@ -229,39 +228,11 @@ class Student extends User {
       return false;
     }
 
-  }// boolian true | false
-
-  public function login($dxnid, $pass) {
-    
-    global $conn;
-    
-    // get user info
-    $stmt = $conn->prepare(
-      "SELECT users.*, students.*, students.id AS student_id, users.id AS `user_id`
-      FROM users
-      INNER JOIN students
-      ON students.user_id = users.id
-      WHERE dxnid = ? AND password = ?");
-
-    $stmt->execute([$dxnid, sha1($pass)]);
-
-    if ($stmt->rowCount() > 0) {
-
-      $result = $stmt->fetch(PDO::FETCH_ASSOC);
-      
-      $this->set_student($result);
-
-      return true;
-
-    }else {
-      return false;
-    }
-
-  }// boolian true | false
+  }// boolian
 
   public function set_student($info) {
     /*
-      ====== sets members to the object
+    ====== sets members to the object
     */
 
     if (isset($info['id']) && !empty($info['id'])) {
@@ -321,11 +292,39 @@ class Student extends User {
     if (isset($info['main_courses']) && !empty($info['main_courses'])) {
       $this->main_courses = $info['main_courses'];
     }
-
+    
   }
-
+  
   /*=========== Retrieve Methods ===========*/
   
+  public function login($dxnid, $pass) {
+    
+    global $conn;
+    
+    // get user info
+    $stmt = $conn->prepare(
+      "SELECT users.*, students.*, students.id AS student_id, users.id AS `user_id`
+      FROM users
+      INNER JOIN students
+      ON students.user_id = users.id
+      WHERE dxnid = ? AND password = ?");
+
+    $stmt->execute([$dxnid, sha1($pass)]);
+
+    if ($stmt->rowCount() > 0) {
+
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      
+      $this->set_student($result);
+
+      return true;
+
+    }else {
+      return false;
+    }
+
+  }// boolian
+
   public function get_course_from_session($course_id) {
     
     foreach ($this->main_courses as $course) {
@@ -477,10 +476,7 @@ class Student extends User {
 
   }// array object course[*]{in main path}
 
-  /*=========== Update Methods ===========*/
-  /*=========== Delete Methods ===========*/
-
-}// end of class Student
+}
 
 
 
@@ -490,9 +486,10 @@ class Teacher extends User {
   public $teacher_id;
   public $accessible_courses = [];
 
+  /*=========== Create Methods ===========*/
+
   public function create_teacher() {
     /*
-      takes: nothing
       does: inserts on users and teachers tables based on $this->info
       returns: on success true | on faild false
     */
@@ -515,7 +512,7 @@ class Teacher extends User {
       return false;
     }
 
-  }// end of create_teacher method
+  }// boolian
 
   public function insert_course($course_obj) {
     /* 
@@ -540,8 +537,8 @@ class Teacher extends User {
     }
 
 
-  }// insert course
-
+  }// Number cousrse_id
+  
   public function set_teacher($info) {
     /*
       takes $info wich is an array containes the info bellow
@@ -566,7 +563,9 @@ class Teacher extends User {
     $this->registerdate  = isset($info['registerdate'])   ? $info['registerdate']:  NULL;
     $this->thumbimage    = isset($info['thumbimage'])     ? $info['thumbimage']:    NULL;
     $this->accessible_courses    = isset($info['permissions'])     ? $info['permissions']:    NULL;
-  }// end of method set_teacher
+  }
+
+  /*=========== Retrieve Methods ===========*/
 
   public function get_teacher($id) {
     /*
@@ -661,7 +660,7 @@ class Teacher extends User {
 
   }// array > object course[*]{permission}
 
-}// end of class Teacher
+}
 
 
 
@@ -669,6 +668,8 @@ class Admin extends User {
   const USER_TYPE = 1;
   public $courses; 
   public $accessible_courses = []; 
+
+  /*=========== Retrieve Methods ===========*/
 
   public function set_admin($info) {
     /*
@@ -725,7 +726,7 @@ class Admin extends User {
       $this->thumbimage = $info['thumbimage'];
     }
   
-  }// end of method set_admin
+  }
 
   public function login($dxnid, $pass) {
     
@@ -749,7 +750,7 @@ class Admin extends User {
       $this->__destruct();
     }
 
-  }// end of login method
+  }
 
   public function get_admin($id) {
     /*
@@ -777,9 +778,9 @@ class Admin extends User {
       echo '<h1>error get_admin [ther is no row count]</h1>';// debug
       $this->__destruct();
     }
-  }// end of get_admin method
+  }
 
-}// end of class Admin
+}
 
 
 
@@ -787,7 +788,7 @@ class Course {
   public $id;
   public $date;
   public $title;
-  public $parent;// if it's sub course
+  public $parent;// if it's sub course "parent" will containe "parent course id"
   public $items = [];
   public $is_enable;// to show it
   public $creator_id;
@@ -813,7 +814,7 @@ class Course {
 
     return !(count($this->errors) > 0);
 
-  }
+  }// boolian
 
   public function check_permission($check) {
     /* 
@@ -838,11 +839,11 @@ class Course {
       return false;
     }
 
-  }// boolian true | false{permission}
+  }// boolian {permission}
   
   private function order($items) {
     /*
-      takes     : $items array of items
+      takes     : array of items
       does      : orders items by "order"
       returns   : ordered items
     */
@@ -869,9 +870,9 @@ class Course {
 
   public function mark_watched_items($student_id, $items) {
     /*
-      takes     : Array Of Items
-      does      : Gets All Watched items and compare it with given items
-      returns   : array of objects [in every object there is a is_open]
+      takes     : student id & Array Of Items[Lecture, Exam]
+      does      : Assign "Open Status" For Every Item
+      returns   : array of objects 
     */
 
     global $conn;
@@ -1139,8 +1140,6 @@ class Course {
 
   }// Number Permission
 
-  /*=========== Update Methods ===========*/
-
   /*=========== Delete Methods ===========*/
 
   public function delete_course() {
@@ -1296,7 +1295,7 @@ class Course {
 
   }// get all items and mark all finished 
 
-}// end of class Course
+}
 
 
 
@@ -1334,6 +1333,8 @@ class Item {
 
   }
 
+  /* ============== Retrieve Methods ============== */
+
   public function get_item_type($course, $order) {
     /*
       takes   : $order wich is item order && $course wich is course id
@@ -1369,6 +1370,8 @@ class Lecture extends Item {
   public $video;
   public $errors = [];
 
+
+  /* ============== Process Methods ============== */
 
   public function set_data($data) {
     /* 
@@ -1407,7 +1410,7 @@ class Lecture extends Item {
       $this->day_before = $data["day_before"];
     }
 
-  }// end of set_data method
+  }
 
   private function check_data($check_type = 2) {
     /*
@@ -1493,6 +1496,8 @@ class Lecture extends Item {
     return $token;
   }
   
+  /* ============== Create Methods ============== */
+
   public function insert_lecture() {
     /*
       does    : get random name for files and upload them than insert into lectures table and items_order table
@@ -1545,6 +1550,8 @@ class Lecture extends Item {
     }
 
   }
+
+  /* ============== Retrieve Methods ============== */
 
   public static function get_lectures($id = NULL) {
     /*
@@ -1665,8 +1672,8 @@ class Exam extends Item {
   public $percent = 70;// default degree to success
   public $questions_count = 1;
   public $questions = [];
-  public $answers   = [];
   
+  /* =========== Process Methods =========== */
 
   public function set_data($data) {
     /* 
@@ -1701,16 +1708,13 @@ class Exam extends Item {
     if (isset($data["questions_count"])) {
       $this->questions_count = $data["questions_count"];
     }
-    if (isset($data["answers"])) {
-      $this->answers = $data["answers"];
-    }
     if (isset($data["date"])) {
       $this->date = $data["date"];
     }
     if (isset($data["day_before"])) {
       $this->day_before = $data["day_before"];
     }
-  }// end of set_data method
+  }
 
   private function check_data() {
     if (empty($this->title)) {
@@ -1728,227 +1732,8 @@ class Exam extends Item {
     if ($this->percent > 100 || $this->percent < 0) {
       $this->errors["percent"] = "the success percent most be between 0 & 100";
     }
-  }// end of check_data method
-
-  public function insert_exam() {
-    /*
-      does    : inserts exam in exams table and sets its order
-      returns : true | false
-    */
-
-    $this->check_data();
-    if (count($this->errors) > 0) {
-        foreach ($this->errors as $error):
-          echo $error;
-        endforeach;
-      exit();
-    }else {// end "check error"
-
-      global $conn;
-
-      // Exams Table Insert
-      $stmt = $conn->prepare(
-        "INSERT INTO
-            exams (`title`, `description`, `exam_percent`)
-        VALUES
-            (:title, :description, :percent)");
-
-      if ($stmt->execute([
-        ":title"        => $this->title,
-        ":description"  => $this->description,
-        ":percent"      => $this->percent,
-      ])) {
-        
-        // Getting Id
-        $stmt = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM exams");
-
-        $stmt->execute();
-
-        if ($stmt->rowCount() > 0) {
-          
-          $this->id = $stmt->fetch(PDO::FETCH_ASSOC)["id"];
-
-          // Selecting Larger Order
-          $stmt = $conn->prepare("SELECT MAX(`order`) + 1 AS `order` FROM items_order WHERE course_id = ?");
-            
-          $stmt->execute([$this->course_id]);
-          
-          if ($stmt->rowCount() > 0) {
-            $order = $stmt->fetch(PDO::FETCH_ASSOC)["order"];
-            if ($order != NULL) {
-              $this->order = $order;
-            }else {
-              $this->order = 1;
-            }
-          }else {
-            $this->order = 1;
-          }
-    
-          // items_order Table Insert
-          $stmt = $conn->prepare(
-            "INSERT INTO items_order (course_id, item_id, item_type, `order`)
-            VALUES (?, ?, 2, ?)");
-
-          if ($stmt->execute([
-            $this->course_id,
-            $this->id,
-            $this->order,
-            ])) {
-              
-              return true;
-              
-            }else {// Field To "items_order Insert"
-              echo $this->order;
-              echo "Error: items_order Insert";
-            exit();
-          }
-
-        }else {// Field To "Get exam Id After Insert"
-          echo "Error: Getting Exam Id After Inster";
-          exit();
-        }
-
-      }else {// Field To "exams Table Insert"  
-        echo "Error: exams Table Insert";
-        exit();
-      }
-
-    }// if ther is no errors
-  }// end of insert_exam method
-
-  public function get_exam() {
-    /*
-      does    : gets exam from exams table
-      returns : info | false
-    */
-
-    global $conn;
-
-    $stmt = $conn->prepare(
-      "SELECT exams.*, items_order.order, count(questions.id) AS questions_count, items_order.course_id,
-      DATEDIFF(NOW(), exams.date) AS day_before FROM exams
-      INNER JOIN items_order ON items_order.item_id = exams.id
-      LEFT JOIN questions ON questions.exam_id = exams.id
-      WHERE exams.id = ?");
-    $stmt->execute([$this->id]);
-
-    if ($stmt->rowCount() > 0) {
-      return $stmt->fetch(PDO::FETCH_ASSOC);
-    }else {
-      return false;
-    }
-
-  }// end of get_exam method
-
-  public function delete_exam() {
-    /*
-      takes: exam id
-      does: removes exam from exams table and make sure the order is right
-      returns: true | false
-    */
-
-    global $conn;
-
-    $this->set_data($this->get_exam());
-
-    $update_order = $conn->prepare(
-      "UPDATE items_order
-        SET `order` = (`order` - 1)
-      WHERE course_id = ? AND `order` > 
-      (SELECT items_order.order FROM items_order WHERE items_order.item_id = ? AND item_type = ?)");
-    $update_order->execute([$this->course_id, $this->id, self::TYPE]);
-
-    $questions_answers = $conn->prepare(
-      "DELETE questions, answers FROM exams
-        INNER JOIN questions ON questions.exam_id = exams.id
-        INNER JOIN answers ON answers.question_id = questions.id
-      WHERE exams.id = ?");
-    $questions_answers->execute([$this->id]);
-    
-    $exam_delete = $conn->prepare(
-      "DELETE items_order, exams FROM exams
-        INNER JOIN items_order ON items_order.item_id = exams.id
-      WHERE items_order.item_type = ? AND exams.id = ?");
-    
-    $result = $exam_delete->execute([Exam::TYPE, $this->id]);
-    if ($result) {
-      return true;
-    }else {
-      return false;
-    }
-
-  }// end of delete_exam method
-
-  public function get_questions() {
-    /*
-      takes: nothing
-      does: gets questions for this exam
-      returns: info | false
-    */
-    global $conn;
-
-    $questions = $conn->prepare("SELECT * FROM questions WHERE exam_id = ?");
-    $questions->execute([$this->id]);
-
-    if ($questions->rowCount() > 0) {
-      $questions = $questions->fetchAll(PDO::FETCH_ASSOC);
-      
-      $answers = $conn->prepare(
-        "SELECT answers.* FROM answers
-        INNER JOIN questions ON questions.id = answers.question_id
-        WHERE questions.exam_id = ?");
-      $answers->execute([$this->id]);
-      
-      if ($answers->rowCount() > 0) {
-        $answers = $answers->fetchAll(PDO::FETCH_ASSOC);
-        // Create Anserts Objects
-        foreach($questions as $qst):
-          $quest = new Question();
-          $quest->set_data($qst);
-          $this->questions[] = $quest;
-        endforeach;
-        foreach($answers as $ans):
-          $ansr = new Answer();
-          $ansr->set_data($ans);
-          $this->answers[] = $ansr;
-        endforeach;
-        foreach($this->questions as $quest):
-          foreach($this->answers as $ansr):
-            if ($ansr->question_id == $quest->id) {
-              $quest->answers[] = $ansr;
-            }
-          endforeach;
-        endforeach;
-        return true;
-      }else {
-        return false;
-      }
-    }else {
-      return false;
-    }
-
-  }// end of get_questions method
-
-  public function get_last_id() {
-    /*
-    takes   : nothing
-    does    : gets last inserted id
-    returns : id | false
-    */
-
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM exams");
-    $stmt->execute();
-
-    if ($stmt->rowCount() > 0) {
-      return $stmt->fetch(PDO::FETCH_ASSOC)["id"];
-    }else {
-      return false;
-    }
-
-  }// end if method get_last_id
-
+  }
+  
   public function compare_answers($user, $compare) {
     /*
     takes : $user wich is student_id
@@ -2096,10 +1881,550 @@ class Exam extends Item {
       return false;
     }
 
-  }// end of Method compare_answers
+  }
+
+  /* =========== Create Methods =========== */
+
+  public function insert_exam() {
+    /*
+      does    : inserts exam in exams table and sets its order
+      returns : true | false
+    */
+
+    $this->check_data();
+    if (count($this->errors) > 0) {
+        foreach ($this->errors as $error):
+          echo $error;
+        endforeach;
+      exit();
+    }else {// end "check error"
+
+      global $conn;
+
+      // Exams Table Insert
+      $stmt = $conn->prepare(
+        "INSERT INTO
+            exams (`title`, `description`, `exam_percent`)
+        VALUES
+            (:title, :description, :percent)");
+
+      if ($stmt->execute([
+        ":title"        => $this->title,
+        ":description"  => $this->description,
+        ":percent"      => $this->percent,
+      ])) {
+        
+        // Getting Id
+        $stmt = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM exams");
+
+        $stmt->execute();
+
+        if ($stmt->rowCount() > 0) {
+          
+          $this->id = $stmt->fetch(PDO::FETCH_ASSOC)["id"];
+
+          // Selecting Larger Order
+          $stmt = $conn->prepare("SELECT MAX(`order`) + 1 AS `order` FROM items_order WHERE course_id = ?");
+            
+          $stmt->execute([$this->course_id]);
+          
+          if ($stmt->rowCount() > 0) {
+            $order = $stmt->fetch(PDO::FETCH_ASSOC)["order"];
+            if ($order != NULL) {
+              $this->order = $order;
+            }else {
+              $this->order = 1;
+            }
+          }else {
+            $this->order = 1;
+          }
+    
+          // items_order Table Insert
+          $stmt = $conn->prepare(
+            "INSERT INTO items_order (course_id, item_id, item_type, `order`)
+            VALUES (?, ?, 2, ?)");
+
+          if ($stmt->execute([
+            $this->course_id,
+            $this->id,
+            $this->order,
+            ])) {
+              
+              return true;
+              
+            }else {// Field To "items_order Insert"
+              echo $this->order;
+              echo "Error: items_order Insert";
+            exit();
+          }
+
+        }else {// Field To "Get exam Id After Insert"
+          echo "Error: Getting Exam Id After Inster";
+          exit();
+        }
+
+      }else {// Field To "exams Table Insert"  
+        echo "Error: exams Table Insert";
+        exit();
+      }
+
+    }// if ther is no errors
+  }
+
+  /* =========== Retrieve Methods =========== */
+
+  public function get_id_by_order($course_id, $exam_order) {
+    /*
+      takes   : course id & exam order
+      return  : exam id | false
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT exams.id FROM exams
+      INNER JOIN items_order ON items_order.item_id = exams.id
+      WHERE items_order.item_type = ? AND items_order.course_id = ? AND items_order.order = ?");
+
+    $stmt->execute([Exam::TYPE, $course_id, $exam_order]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_NUM)[0];
+    }else {
+      return false;
+    }
+
+  }
+  
+  public function get_exam() {
+    /*
+      does    : gets exam from exams table
+      returns : info | false
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT exams.*, items_order.order, count(questions.id) AS questions_count, items_order.course_id,
+      DATEDIFF(NOW(), exams.date) AS day_before FROM exams
+      INNER JOIN items_order ON items_order.item_id = exams.id
+      LEFT JOIN questions ON questions.exam_id = exams.id
+      WHERE exams.id = ?");
+    $stmt->execute([$this->id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }
+
+  public function get_questions() {
+    /*
+      does: gets questions for this exam
+      returns: info | false
+    */
+    global $conn;
+
+    $questions = $conn->prepare("SELECT * FROM questions WHERE exam_id = ?");
+    $questions->execute([$this->id]);
+
+    if ($questions->rowCount() > 0) {
+      $questions = $questions->fetchAll(PDO::FETCH_ASSOC);
+      
+      $answers = $conn->prepare(
+        "SELECT answers.* FROM answers
+        INNER JOIN questions ON questions.id = answers.question_id
+        WHERE questions.exam_id = ?");
+      $answers->execute([$this->id]);
+      
+      if ($answers->rowCount() > 0) {
+        $answers_info = $answers->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach($questions as $info):
+          $quest = new Question();
+          $quest->set_data($info);
+          $this->questions[] = $quest;
+        endforeach;
+
+        $answers = [];
+        foreach($answers_info as $info):
+          $ansr = new Answer();
+          $ansr->set_data($info);
+          array_push($answers, $ansr);
+        endforeach;
+
+        foreach($this->questions as $quest):
+          foreach($answers as $ansr):
+            if ($ansr->question_id == $quest->id) {
+              $quest->answers[] = $ansr;
+            }
+          endforeach;
+        endforeach;
+        unset($answers);
+        return true;
+      }else {
+        return false;
+      }
+    }else {
+      return false;
+    }
+
+  }
+
+  public function get_last_id() {
+    /*
+    takes   : nothing
+    does    : gets last inserted id
+    returns : id | false
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM exams");
+    $stmt->execute();
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_ASSOC)["id"];
+    }else {
+      return false;
+    }
+
+  }
+
+  /* =========== Delete Methods =========== */
+
+  public function delete_exam() {
+    /*
+      does: removes exam from exams table and make sure the order is right
+      returns: true | false
+    */
+
+    global $conn;
+
+    $this->set_data($this->get_id());
+
+    $update_order = $conn->prepare(
+      "UPDATE items_order
+        SET `order` = (`order` - 1)
+      WHERE course_id = ? AND `order` > 
+      (SELECT items_order.order FROM items_order WHERE items_order.item_id = ? AND item_type = ?)");
+    $update_order->execute([$this->course_id, $this->id, self::TYPE]);
+
+    $questions_answers = $conn->prepare(
+      "DELETE questions, answers FROM exams
+        INNER JOIN questions ON questions.exam_id = exams.id
+        INNER JOIN answers ON answers.question_id = questions.id
+      WHERE exams.id = ?");
+    $questions_answers->execute([$this->id]);
+    
+    $exam_delete = $conn->prepare(
+      "DELETE items_order, exams FROM exams
+        INNER JOIN items_order ON items_order.item_id = exams.id
+      WHERE items_order.item_type = ? AND exams.id = ?");
+    
+    $result = $exam_delete->execute([Exam::TYPE, $this->id]);
+    if ($result) {
+      return true;
+    }else {
+      return false;
+    }
+
+  }
 
 }
 
+
+
+class Question {
+  const ADMIN = "ADMIN";
+  public $id;
+  public $exam_id;
+  public $question;
+  public $answers = [];
+  public $update = [];
+  public $multible_option = 2;
+  public $important = 0;
+  public $order;
+  public $errors = [];
+
+  /*=========== Process Methods ===========*/
+
+  public function set_data($info) {
+    
+    if (isset($info["id"]) && !empty($info["id"])) {
+      $this->id = $info["id"];
+    }
+    if (isset($info["exam_id"]) && !empty($info["exam_id"])) {
+      $this->exam_id = $info["exam_id"];
+    }
+    if (isset($info["question"]) && !empty($info["question"])) {
+      $this->question = $info["question"];
+    }
+    if (isset($info["answers"]) && !empty($info["answers"])) {
+      $this->answers = $info["answers"];
+    }
+    if (isset($info["update"]) && !empty($info["update"])) {
+      $this->update = $info["update"];
+    }
+    if (isset($info["multible_option"]) && !empty($info["multible_option"])) {
+      $this->multible_option = $info["multible_option"];
+    }
+    if (isset($info["important"]) && !empty($info["important"])) {
+      $this->important = $info["important"];
+    }
+    if (isset($info["order"]) && !empty($info["order"])) {
+      $this->order = $info["order"];
+    }
+
+  }
+
+  private function check_data() {
+    /* 
+      does    : check if all data is valid
+      returns : true| array of errors
+     */
+
+    if (!isset($this->question) || empty($this->question)) {
+      $this->errors[] = "Question Can't Be Empty";
+    }else {
+      if (strlen($this->question) < 5) {
+        $this->errors[] = "The Question Is Too Short";
+      }
+    }
+    if (count($this->answers) <= 1 && count($this->update) <= 1) {
+      $this->errors[] = "Answers Is Less Than 2";
+    }
+
+  }
+
+  /*=========== Create Methods ===========*/
+
+  public function insert_question() {
+    /*
+      does    : Inserts Question And Answers In Questions and Answers Tables
+      returns : true | false
+    */
+
+    $this->check_data();
+    if (count($this->errors) > 0) {
+      foreach($this->errors as $error):
+        echo $error;
+      endforeach;
+      exit();
+    }else {// if No errors
+
+      global $conn;
+
+      // get Larger Order 
+      $order = $conn->prepare("SELECT MAX(`order`) + 1 AS `order` FROM questions WHERE exam_id = ?");
+      $order->execute([$this->exam_id]);
+      if ($order->rowCount() > 0) {
+        $fetch = $order->fetch(PDO::FETCH_ASSOC)["order"];
+        $this->order = isset($fetch) ? $fetch: 1;
+      }else {
+        $this->order = 1;
+      }
+  
+      // Insert question
+      $question = $conn->prepare(
+        "INSERT INTO questions (`exam_id`, `question`, `important`, `order`, `multible_option`)
+        VALUES (:exam_id, :question, :important, :order, :multible_option)");
+
+      if ($question->execute([
+          ":exam_id"          => $this->exam_id,
+          ":question"         => $this->question,
+          ":important"        => $this->important,
+          ":order"            => $this->order,
+          ":multible_option"  => $this->multible_option,
+      ])) {
+
+        // get id after insert it 
+        $id = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM questions");
+        $id->execute();
+
+        $this->id = $id->fetch(PDO::FETCH_ASSOC)["id"];
+
+        $sql = "INSERT INTO answers (`question_id`, `answer`, `is_right`) VALUES";
+        $arg = [];
+
+        foreach($this->answers as $i => $answer):
+          if ($i == 0) {
+            $sql .= " (?, ?, ?)";
+          }else {
+            $sql .= ", (?, ?, ?)";
+          }
+          array_push($arg, $this->id);
+          array_push($arg, $answer->answer);
+          array_push($arg, $answer->is_right);
+        endforeach;
+
+        $insert = $conn->prepare($sql);
+
+        if ($insert->execute($arg)) {
+          return true;
+        }else {// error inserting answer
+          return false;
+        }
+        
+      }else {
+        return false;
+      }// end "question insert" check
+
+    }// end "there is error"
+
+  }
+
+  /*=========== Retrieve Methods ===========*/
+
+  public function get_question_by_order($exam_id, $order) {
+    /*
+      takes   : $exam_id wich is exam id AND $order wich is question order
+      does    : gets info of question based on it's order
+      returns : info | false
+    */
+
+    global $conn;
+
+    $question = $conn->prepare(
+      "SELECT questions.* FROM questions WHERE questions.exam_id = ? AND questions.order = ?");
+    $question->execute([$exam_id, $order]);
+
+    if ($question->rowCount() > 0) {
+      $question = $question->fetch(PDO::FETCH_ASSOC);
+      
+      $answers = $conn->prepare(
+        "SELECT answers.* FROM answers INNER JOIN questions ON questions.id = answers.question_id
+        WHERE questions.exam_id = ? AND questions.order = ?");
+      $answers->execute([$exam_id, $order]);
+
+      if ($answers->rowCount() > 0) {
+        $answers = $answers->fetchAll(PDO::FETCH_ASSOC);
+
+        $question["answers"] = $answers;// add answers to question info
+        return $question;
+
+      }else {
+        return false;
+      }
+    }else {// field to get question
+      return false;
+    }
+
+  }
+
+  public function get_question($id) {
+    /*
+      takes   : question id
+      does    : gets data of question givin
+      returns : info | false
+    */
+
+    global $conn;
+
+    $question = $conn->prepare("SELECT questions.* FROM questions WHERE questions.id = ?");
+    $question->execute([$id]);
+      
+    if ($question->rowCount() > 0) {
+      $question = $question->fetch(PDO::FETCH_ASSOC);
+
+      $answers = $conn->prepare("SELECT answers.* FROM answers WHERE answers.question_id = ?");
+      $answers->execute([$id]);
+
+      if ($answers->rowCount() > 0) {
+        $answers = $answers->fetchAll(PDO::FETCH_ASSOC);
+
+        $question["answers"] = $answers;
+        return $question;
+  
+      }else {
+        return false;
+      }
+    }else {
+      return false;
+    }
+      
+  }
+
+  /*=========== Update Methods ===========*/
+
+  public function update_question() {
+    /*
+      does    : updates Question And Answers In Questions and Answers Tables
+      returns : true | false
+    */
+
+    $this->check_data();
+    if (count($this->errors) > 0) {
+      foreach($this->errors as $error):
+        echo $error;
+      endforeach;
+      exit();
+    }else {
+
+      global $conn;
+
+      // Update The Question
+      $question = $conn->prepare(
+        "UPDATE questions SET
+        `question` = :question, `important` = :important, `multible_option` = :multible_option
+        WHERE id = :id");
+
+      if ($question->execute([
+          ":question"         => $this->question,
+          ":important"        => $this->important,
+          ":multible_option"  => $this->multible_option,
+          ":id"               => $this->id,
+      ])) {
+
+        // Insert New Answers
+        if (isset($this->answers) && !empty($this->answers) && count($this->answers) > 0) {
+          foreach ($this->answers as $answer):
+            $answer->insert_answer();
+          endforeach;
+        }
+        
+        // Update Old Answers
+        if (isset($this->update) && !empty($this->update) && count($this->update) > 0) {
+          foreach ($this->update as $upd):
+            $upd->update_answer();
+          endforeach;
+          return true;
+        }else {
+          echo "filed To Update answers";
+          return false;
+        }
+        
+      }else {
+        echo "filed To Update Question";
+        return false;
+      }// end "question insert" check
+
+    }// end "there is error"
+
+  }
+
+  /* =========== Delete Methods =========== */
+  
+  public function delete_question_by_order($exam_id, $order) {
+    /*
+      takes   : exam id & question order
+      does    : delete question and his answers
+      returns : true | false
+    */
+
+    global $conn;
+
+    $question = $conn->prepare(
+      "DELETE FROM questions WHERE questions.exam_id = ? AND questions.order = ?");
+    $result = $question->execute([$exam_id, $order]);
+
+    return $result;
+
+  }
+
+}
 
 
 class Answer {
@@ -2198,287 +2523,6 @@ class Answer {
 
 }
 
-
-
-class Question {
-  const ADMIN = "ADMIN";
-  public $id;
-  public $exam_id;
-  public $question;
-  public $answers = [];
-  public $update = [];
-  public $multible_option = 2;
-  public $important = 0;
-  public $order;
-  public $errors = [];
-
-  public function get_question_by_order($exam_id, $order) {
-    /*
-      takes   : $exam_id wich is exam id AND $order wich is question order
-      does    : gets info of question based on it's order
-      returns : info | false
-    */
-
-    global $conn;
-
-    $question = $conn->prepare(
-      "SELECT questions.* FROM questions WHERE questions.exam_id = ? AND questions.order = ?");
-    $question->execute([$exam_id, $order]);
-
-    if ($question->rowCount() > 0) {
-      $question = $question->fetch(PDO::FETCH_ASSOC);
-      
-      $answers = $conn->prepare(
-        "SELECT answers.* FROM answers INNER JOIN questions ON questions.id = answers.question_id
-        WHERE questions.exam_id = ? AND questions.order = ?");
-      $answers->execute([$exam_id, $order]);
-
-      if ($answers->rowCount() > 0) {
-        $answers = $answers->fetchAll(PDO::FETCH_ASSOC);
-
-        $question["answers"] = $answers;// add answers to question info
-        return $question;
-
-      }else {// field to get answers
-        return false;
-      }
-    }else {// field to get question
-      return false;
-    }
-
-  }// end of get_question_by_order method
-
-  public function get_question($user_id, $id) {
-    /*
-      takes   : $user_id wich is user id and $id wich is id of question
-      does    : gets data of question givin
-      returns : info | false
-    */
-
-    global $conn;
-
-    if ($user_id == self::ADMIN) {
-      $question = $conn->prepare("SELECT questions.* FROM questions WHERE questions.id = ?");
-      $question->execute([$id]);
-      
-      $answers = $conn->prepare("SELECT answers.* FROM answers WHERE answers.question_id = ?");
-      $answers->execute([$id]);
-    }else {
-      $question = $conn->prepare(
-        "SELECT questions.*, teachers_courses.course_id FROM questions
-        INNER JOIN items_order ON items_order.item_id = questions.exam_id
-        INNER JOIN teachers_courses ON teachers_courses.course_id = items_order.course_id
-        WHERE items_order.item_type = 2 AND teachers_courses.teacher_id = ? AND questions.id = ?");
-      $question->execute([$user_id, $id]);
-
-      $answers = $conn->prepare(
-        "SELECT answers.* FROM answers
-        INNER JOIN questions ON questions.id = answers.question_id
-        INNER JOIN items_order ON items_order.item_id = questions.exam_id
-        INNER JOIN teachers_courses ON teachers_courses.course_id = items_order.course_id
-        WHERE items_order.item_type = 2 AND teachers_courses.teacher_id = ? AND answers.question_id = ?");
-      $answers->execute([$user_id, $id]);
-    }
-
-    if ($question->rowCount() > 0) {
-      $question = $question->fetch(PDO::FETCH_ASSOC);
-      
-      if ($answers->rowCount() > 0) {
-        $answers = $answers->fetchAll(PDO::FETCH_ASSOC);
-        
-        $question["answers"] = $answers;
-        return $question;
-
-      }else {// field to get answers
-        return false;
-      }
-    }else {// field to get question
-      return false;
-    }
-  }// end of get_question method
-
-  public function set_data($info) {
-    
-    if (isset($info["id"]) && !empty($info["id"])) {
-      $this->id = $info["id"];
-    }
-    if (isset($info["exam_id"]) && !empty($info["exam_id"])) {
-      $this->exam_id = $info["exam_id"];
-    }
-    if (isset($info["question"]) && !empty($info["question"])) {
-      $this->question = $info["question"];
-    }
-    if (isset($info["answers"]) && !empty($info["answers"])) {
-      $this->answers = $info["answers"];
-    }
-    if (isset($info["update"]) && !empty($info["update"])) {
-      $this->update = $info["update"];
-    }
-    if (isset($info["multible_option"]) && !empty($info["multible_option"])) {
-      $this->multible_option = $info["multible_option"];
-    }
-    if (isset($info["important"]) && !empty($info["important"])) {
-      $this->important = $info["important"];
-    }
-    if (isset($info["order"]) && !empty($info["order"])) {
-      $this->order = $info["order"];
-    }
-
-  }// end of set_data method
-
-  private function check_data() {
-    /* 
-      takes   : nothing
-      does    : check if all data is valid
-      returns : true| array of errors
-     */
-
-    if (!isset($this->question) || empty($this->question)) {
-      $this->errors[] = "Question Can't Be Empty";
-    }else {
-      if (strlen($this->question) < 5) {
-        $this->errors[] = "The Question Is Too Short";
-      }
-    }
-    if (count($this->answers) <= 1 && count($this->update) <= 1) {
-      $this->errors[] = "Answers Is Less Than 2";
-    }
-
-  }// end of method check_data
-  
-  public function insert_question() {
-    /*
-      takes   : nothing
-      does    : Inserts Question And Answers In Questions and Answers Tables
-      returns : true | false
-    */
-
-    $this->check_data();
-    if (count($this->errors) > 0) {
-      foreach($this->errors as $error):
-        echo $error;
-      endforeach;
-      exit();
-    }else {// if No errors
-
-      global $conn;
-
-      // get Larger Order 
-      $order = $conn->prepare("SELECT MAX(`order`) + 1 AS `order` FROM questions WHERE exam_id = ?");
-      $order->execute([$this->exam_id]);
-      if ($order->rowCount() > 0) {
-        $fetch = $order->fetch(PDO::FETCH_ASSOC)["order"];
-        $this->order = isset($fetch) ? $fetch: 1;
-      }else {
-        $this->order = 1;
-      }
-  
-      // Insert question
-      $question = $conn->prepare(
-        "INSERT INTO questions (`exam_id`, `question`, `important`, `order`, `multible_option`)
-        VALUES (:exam_id, :question, :important, :order, :multible_option)");
-
-      if ($question->execute([
-          ":exam_id"          => $this->exam_id,
-          ":question"         => $this->question,
-          ":important"        => $this->important,
-          ":order"            => $this->order,
-          ":multible_option"  => $this->multible_option,
-      ])) {
-
-        // get id after insert it 
-        $id = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM questions");
-        $id->execute();
-
-        $this->id = $id->fetch(PDO::FETCH_ASSOC)["id"];
-
-        $sql = "INSERT INTO answers (`question_id`, `answer`, `is_right`) VALUES";
-        $arg = [];
-
-        foreach($this->answers as $i => $answer):
-          if ($i == 0) {
-            $sql .= " (?, ?, ?)";
-          }else {
-            $sql .= ", (?, ?, ?)";
-          }
-          array_push($arg, $this->id);
-          array_push($arg, $answer->answer);
-          array_push($arg, $answer->is_right);
-        endforeach;
-
-        $insert = $conn->prepare($sql);
-
-        if ($insert->execute($arg)) {
-          return true;
-        }else {// error inserting answer
-          return false;
-        }
-        
-      }else {
-        return false;
-      }// end "question insert" check
-
-    }// end "there is error"
-
-  }// end of method insert_question
-
-  public function update_question() {
-    /*
-      does    : updates Question And Answers In Questions and Answers Tables
-      returns : true | false
-    */
-
-    $this->check_data();
-    if (count($this->errors) > 0) {
-      foreach($this->errors as $error):
-        echo $error;
-      endforeach;
-      exit();
-    }else {
-
-      global $conn;
-
-      // Update The Question
-      $question = $conn->prepare(
-        "UPDATE questions SET
-        `question` = :question, `important` = :important, `multible_option` = :multible_option
-        WHERE id = :id");
-
-      if ($question->execute([
-          ":question"         => $this->question,
-          ":important"        => $this->important,
-          ":multible_option"  => $this->multible_option,
-          ":id"               => $this->id,
-      ])) {
-
-        // Insert New Answers
-        if (isset($this->answers) && !empty($this->answers) && count($this->answers) > 0) {
-          foreach ($this->answers as $answer):
-            $answer->insert_answer();
-          endforeach;
-        }
-        
-        // Update Old Answers
-        if (isset($this->update) && !empty($this->update) && count($this->update) > 0) {
-          foreach ($this->update as $upd):
-            $upd->update_answer();
-          endforeach;
-          return true;
-        }else {
-          echo "filed To Update answers";
-          return false;
-        }
-        
-      }else {
-        echo "filed To Update Question";
-        return false;
-      }// end "question insert" check
-
-    }// end "there is error"
-
-  }// end of method insert_question
-
-}
 
 
 class File {
