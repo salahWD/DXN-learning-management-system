@@ -83,14 +83,15 @@ if ($item->get_item_type($course_id, $item_order)) {
       <div class="container">
         <h2 class="text-center mb-3 mt-3 h2"><?php echo $exam->title;?></h2>
         <?php // action="<?php echo theURL . language . "/exam-proces/" . $course_id . "/" . $item_order;? >"?>
-        <form method="POST" id="answersForm">
-          <input type="hidden" name="id" value="<?php echo $exam->id;?>">
+        <form method="POST" id="answersForm" data-value="<?php echo $exam->id;?>">
+          <input type="hidden" >
           <?php foreach($exam->questions as $i => $quest):?>
-            <div class="question-show p-2">
+            <div class="question-show p-2" data-value="<?php echo $quest->id;?>">
               <div class="fw-bold question-text h4"><?php echo $i+1 . ". " . $quest->question;?></div>
               <?php foreach($quest->answers as $x => $ansr):?>
                 <div class="form-check">
-                  <input <?php if ($quest->multible_option == 2) {echo "type=\"checkbox\" name=\"answers[" . $quest->id . "][]\"";}else {echo 'type="radio" name="answers[' . $quest->id . ']"';}?> id="<?php echo $i?>/<?php echo $x;?>" value="<?php echo $ansr->id?>">
+                  <input value="<?php echo $ansr->id?>" <?php if ($quest->multible_option == 2) {echo "type=\"checkbox\"";}else {echo 'type="radio"';}?>
+                  id="<?php echo $i?>/<?php echo $x;?>">
                   <label class="fw-normal" for="<?php echo $i?>/<?php echo $x;?>"><?php echo $ansr->answer;?></label>
                 </div>
               <?php endforeach;?>

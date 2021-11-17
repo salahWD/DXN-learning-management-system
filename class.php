@@ -2073,6 +2073,65 @@ class Exam extends Item {
 
   }
 
+  public function get_questions_answers_id() {
+    /*
+      does: gets [questions ids, answers ids, is_right] for this exam
+      returns: info | false
+    */
+    global $conn;
+
+    $questions = $conn->prepare("SELECT id FROM questions WHERE exam_id = ?");
+    $questions->execute([$this->id]);
+
+    if ($questions->rowCount() > 0) {
+      $questions = $questions->fetchAll(PDO::FETCH_ASSOC);
+      
+      $multi_answers = $conn->prepare(
+        "SELECT answers.id, answers.question_id FROM answers
+        INNER JOIN questions ON questions.id = answers.question_id
+        WHERE questions.exam_id = ? AND questions.multible_option = 2");
+      $multi_answers->execute([$this->id]);
+      
+      $single_answers = $conn->prepare(
+        "SELECT answers.id, answers.question_id FROM answers
+        INNER JOIN questions ON questions.id = answers.question_id
+        WHERE questions.exam_id = ? AND questions.multible_option = 1 AND answers.is_right = 2");
+      $single_answers->execute([$this->id]);
+      
+      if ($multi_answers->rowCount() > 0  || $single_answers->rowCount() > 0) {
+        $answers_info = array_merge($single_answers->fetchAll(PDO::FETCH_ASSOC), $multi_answers->fetchAll(PDO::FETCH_ASSOC));
+
+        foreach($questions as $info):
+          $quest = new Question();
+          $quest->set_data($info);
+          $this->questions[] = $quest;
+        endforeach;
+
+        $answers = [];
+        foreach($answers_info as $info):
+          $ansr = new Answer();
+          $ansr->set_data($info);
+          array_push($answers, $ansr);
+        endforeach;
+
+        foreach($this->questions as $quest):
+          foreach($answers as $ansr):
+            if ($ansr->question_id == $quest->id) {
+              $quest->answers[] = $ansr;
+            }
+          endforeach;
+        endforeach;
+        unset($answers);
+        return true;
+      }else {
+        return false;
+      }
+    }else {
+      return false;
+    }
+
+  }
+
   public function get_last_id() {
     /*
     takes   : nothing
@@ -2144,7 +2203,8 @@ class Question {
   public $question;
   public $answers = [];
   public $update = [];
-  public $multible_option = 2;
+  public $multible_option = 2;// 2 true | 1 false
+  public $grade = 0;// used in exam-proces to save grade
   public $important = 0;
   public $order;
   public $errors = [];
@@ -2162,8 +2222,12 @@ class Question {
     if (isset($info["question"]) && !empty($info["question"])) {
       $this->question = $info["question"];
     }
-    if (isset($info["answers"]) && !empty($info["answers"])) {
-      $this->answers = $info["answers"];
+    if (isset($info["answers"]) && !empty($info["answers"] && is_array($info["answers"]))) {
+      foreach ($info["answers"] as $answer_info) {
+        $answer = new Answer();
+        $answer->set_data($answer_info);
+        array_push($this->answers, $answer);
+      }
     }
     if (isset($info["update"]) && !empty($info["update"])) {
       $this->update = $info["update"];
