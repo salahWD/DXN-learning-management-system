@@ -2196,6 +2196,70 @@ class Exam extends Item {
 
 
 
+class ExamProces {
+
+  public $id;
+  public $compare_table = [];// array of 4 columns [q_id, a_id, a_status, student_a = 1]
+  // private $questions = [];
+  // private $answers = [];
+
+  /* =========== Process Methods =========== */
+
+  public function get_student_answers($student_answers) {
+    /*
+      does    : fills "compare table" with [student answer]
+    */
+
+    foreach ($this->compare_table as $question):
+        foreach ($question[0]->answers as $answer):
+          if ($answer["is_right"] == 2) {
+            if (in_array($answer["id"], $student_answers[$question[0]->id])) {
+              $question[1] += (100 / count($question[0]->answers));
+            }
+          }else {
+            if (!in_array($answer["id"], $student_answers[$question[0]->id])) {
+              $question[1] += (100 / count($question[0]->answers));
+            }
+          }
+        endforeach;
+    endforeach;
+  }
+
+  /* =========== Retrieve Methods =========== */
+
+  public function get_compare_table() {
+    /*
+      does    : fills "compare table" with [question id, answer id, answer status]
+      returns : true | false
+    */
+
+    global $conn;
+
+    $questions_data = $conn->prepare("SELECT questions.id FROM questions WHERE questions.exam_id = ?");
+    $questions_data->execute([$this->id]);
+
+    if ($questions_data->rowCount() > 0) {
+      $questions_data = $questions_data->fetchAll(PDO::FETCH_ASSOC);
+
+      foreach ($questions_data as $question_data):
+        $question = new Question();
+        $question->set_data($question_data);
+        $question->get_answers_id_status();
+        $this->compare_table[$question->id][0] = $question;
+        $this->compare_table[$question->id][1] = 0;// question full grade
+      endforeach; 
+
+      return true;
+    }else {
+      return false;
+    }
+
+  }
+
+}
+
+
+
 class Question {
   const ADMIN = "ADMIN";
   public $id;
@@ -2204,7 +2268,7 @@ class Question {
   public $answers = [];
   public $update = [];
   public $multible_option = 2;// 2 true | 1 false
-  public $grade = 0;// used in exam-proces to save grade
+  // public $grade = 0;// used in exam-proces to save grade
   public $important = 0;
   public $order;
   public $errors = [];
@@ -2405,6 +2469,29 @@ class Question {
       }else {
         return false;
       }
+    }else {
+      return false;
+    }
+      
+  }
+
+  public function get_answers_id_status() {
+    /*
+      does    : gets id and status for question answers
+      returns : info | false
+    */
+
+    global $conn;
+
+    $answers = $conn->prepare("SELECT answers.id, answers.is_right FROM answers WHERE answers.question_id = ?");
+    $answers->execute([$this->id]);
+
+    if ($answers->rowCount() > 0) {
+      $answers = $answers->fetchAll(PDO::FETCH_ASSOC);
+
+      $this->answers = $answers;
+      
+      return true;
     }else {
       return false;
     }

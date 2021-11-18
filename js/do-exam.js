@@ -2,10 +2,10 @@ $(document).ready(function(){
 
   const answersForm   = document.getElementById("answersForm");
   const checkBtn      = $("#send");
-  let   answers       = document.querySelectorAll(".question-show");
+  let   questions       = document.querySelectorAll(".question-show");
   checkBtn.click(function () {
 
-    answers.forEach( inp => {
+    questions.forEach( inp => {
       if (inp.querySelectorAll("input:checked").length == 0) {
         inp.classList.add("border-danger", "border", "rounded");
         inp.querySelector(`.question-text`).classList.add("text-danger");
@@ -25,19 +25,19 @@ $(document).ready(function(){
 
       let postData = {
         exam_id: answersForm.dataset.value,
-        question_count: answers.length,
+        // question_count: answers.length,
         questions: [],
       };
 
-      answers.forEach(question => {
+      questions.forEach(question => {
         let answerElement = question.querySelectorAll('input:checked');
         let answers = [];
 
         answerElement.forEach(element => {
-          answers.push({id: element.value});
+          answers.push(element.value);
         });
 
-        postData.questions.push({id: question.dataset.value, answers: answers});
+        postData.questions[`${question.dataset.value}`] = answers;
         
       });
 
