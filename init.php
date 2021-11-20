@@ -53,7 +53,7 @@ if (isset($_GET["url"]) && !empty($_GET["url"])) {
             }
           }
           if ($page->arguments >= 2) {
-            if (!isset($URL[3]) || empty($URL[3]) || (!is_numeric($URL[3]) && $URL[3] != "add")) {
+            if (!isset($URL[3]) || empty($URL[3]) || (!is_numeric($URL[3]) && $URL[3] != "add" && $URL[3] != "del")) {
               echo "ther is no " . '$URL[3]';
               exit();
             }

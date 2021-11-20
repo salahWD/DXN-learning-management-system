@@ -39,10 +39,14 @@ if ($item->get_item_type($course_id, $item_order)) {
   
       $post_quests = [];
   
+      echo "<pre>";
+      print_r($_POST);
+      echo "</pre>";
+      exit();
       foreach($_POST["answers"] as $i => $question):
   
         $quest = new Question();
-        $quest->set_data(["id" => $i]);
+        $quest->id = $i;
   
         if (is_array($question) && COUNT($question) > 0) {
           foreach($question as $ansr):
@@ -73,19 +77,20 @@ if ($item->get_item_type($course_id, $item_order)) {
     }else {
   
       $exam = new Exam();
-      $exam->set_data($exam->get_exam($course_id, $item_order));
+      $exam->id = $exam->get_id_by_order($course_id, $item_order);
       $exam->get_questions();
       ?>
       <div class="container">
         <h2 class="text-center mb-3 mt-3 h2"><?php echo $exam->title;?></h2>
-        <form action="<?php echo theURL . language . "/view/" . $course_id . "/" . $item_order;?>" method="POST">
-          <input type="hidden" name="id" value="<?php echo $exam->id;?>">
+        <form method="POST" id="answersForm" data-value="<?php echo $exam->id;?>">
+          <input type="hidden" >
           <?php foreach($exam->questions as $i => $quest):?>
-            <div class="question-show p-2">
+            <div class="question-show p-2" data-value="<?php echo $quest->id;?>">
               <div class="fw-bold question-text h4"><?php echo $i+1 . ". " . $quest->question;?></div>
               <?php foreach($quest->answers as $x => $ansr):?>
                 <div class="form-check">
-                  <input <?php if ($quest->multible_option == 2) {echo "type=\"checkbox\" name=\"answers[" . $quest->id . "][]\"";}else {echo 'type="radio" name="answers[' . $quest->id . ']"';}?> id="<?php echo $i?>/<?php echo $x;?>" value="<?php echo $ansr->id?>">
+                  <input value="<?php echo $ansr->id?>" <?php if ($quest->multible_option == 2) {echo "type=\"checkbox\"";}else {echo 'type="radio" name="question_' . $quest->id . '"';}?>
+                  id="<?php echo $i?>/<?php echo $x;?>">
                   <label class="fw-normal" for="<?php echo $i?>/<?php echo $x;?>"><?php echo $ansr->answer;?></label>
                 </div>
               <?php endforeach;?>
@@ -93,7 +98,7 @@ if ($item->get_item_type($course_id, $item_order)) {
             <hr>
           <?php endforeach;?>
         </form>
-        <div class="d-flex justify-content-around mt-4">
+        <div class="d-flex justify-content-around mt-4 pb-4">
           <button class="btn btn-primary" id="send" type="button">Send</button>
           <button class="btn btn-danger" type="button">Cancel</button>
         </div>
