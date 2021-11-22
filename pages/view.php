@@ -81,6 +81,20 @@ if ($item->get_item_type($course_id, $item_order)) {
       $exam->get_questions();
       ?>
       <div class="container">
+
+        <div class="result d-none" id="result">
+          <h2 class="text-center mb-3"><?php echo $exam->title;?></h2>
+          <div class="alert text-center" id="result-alert">
+            <h4 class="fw-bold" id="result-status"></h4>
+            <p class="lead" id="result-text"></p>
+            <div class="card bordered" id="result-itemsContaioner">
+              <ul class="list-unstyled list-group list-group-flush" id="result-items">
+              </ul>
+            </div>
+          </div>
+        </div>
+
+
         <h2 class="text-center mb-3 mt-3 h2"><?php echo $exam->title;?></h2>
         <form method="POST" id="answersForm" data-value="<?php echo $exam->id;?>">
           <input type="hidden" >
@@ -100,7 +114,7 @@ if ($item->get_item_type($course_id, $item_order)) {
         </form>
         <div class="d-flex justify-content-around mt-4 pb-4">
           <button class="btn btn-primary" id="send" type="button">Send</button>
-          <button class="btn btn-danger" type="button">Cancel</button>
+          <button class="btn btn-danger" id="cancel" type="button">Cancel</button>
         </div>
       </div>
       <?php

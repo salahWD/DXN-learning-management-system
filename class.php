@@ -2181,6 +2181,7 @@ class Exam extends Item {
 class ExamProces {
 
   public $id;
+  public $min_mark;
   public $compare_table = [];// array of 4 columns [q_id, a_id, a_status, student_a = 1]
 
   /* =========== Process Methods =========== */
@@ -2210,7 +2211,7 @@ class ExamProces {
     $markes = [];
     foreach ($this->compare_table as $index => $question):
         $full_marke += (100 / count($this->compare_table)) * ($question[1] / 100);
-        array_push($markes, [$question[0]->id, (100 / count($this->compare_table)) * ($question[1] / 100)]);
+        array_push($markes, [$question[0]->id, $question[0]->answers, (100 / count($this->compare_table)) * ($question[1] / 100)]);
     endforeach;
     return [$full_marke, $markes];
   }
@@ -2232,14 +2233,34 @@ class ExamProces {
       $questions_data = $questions_data->fetchAll(PDO::FETCH_ASSOC);
 
       foreach ($questions_data as $question_data):
+
         $question = new Question();
         $question->set_data($question_data);
         $question->get_answers_id_status();
+
         $this->compare_table[$question->id][0] = $question;
         $this->compare_table[$question->id][1] = 0;// question full grade
       endforeach; 
 
       return true;
+    }else {
+      return false;
+    }
+
+  }
+
+  public function get_min_mark() {
+    /*
+      does: gets min mark
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT exam_percent FROM exams WHERE exams.id = ?");
+    $stmt->execute([$this->id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_NUM)[0];
     }else {
       return false;
     }

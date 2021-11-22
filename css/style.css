@@ -146,6 +146,33 @@ input:focus {
 
 /* End Questions */
 
+/* View Exams */
+
+.result .list-group {
+  padding: 20px;
+}
+.result .list-group .list-grou-item {
+  display: flex;
+  justify-content: space-evenly;
+  column-gap: 40px;
+  margin-top: 10px;
+  background: #eee;
+  padding: 10px 14px;
+}
+.result .list-group .list-grou-item {
+  display: flex;
+  justify-content: space-evenly;
+  column-gap: 40px;
+  margin-top: 10px;
+  background: #eee;
+  padding: 10px 14px;
+}
+.result .list-group .list-grou-item > div {
+  width: 100%;
+}
+
+/* End View Exams */
+
 /* Item Manage */
 
 .item-manage .image-container {
