@@ -30,17 +30,22 @@ if (isset($_GET["url"]) && !empty($_GET["url"])) {
           }
 
           if ($page->type == "login") {// Login Check
-            if (!isset($_SESSION["user"]) || empty($_SESSION["user"])) {
+            if (!isset($user) || empty($user)) {
               echo "You Have To Login";
               exit();
             }
           }elseif ($page->type == "admin") {// Just Admin Can Enter
-            if (!isset($_SESSION["user"]) || empty($_SESSION["user"]) || $_SESSION["user"]::USER_TYPE != 1) {
+            if (!isset($user) || empty($user) || $user::USER_TYPE != 1) {
               echo "You Have No Access To This Page";
               exit();
             }
           }elseif ($page->type == "manage") {// Admin OR Teacher
-            if (!isset($_SESSION["user"]) || $_SESSION["user"]::USER_TYPE > 2 || $_SESSION["user"]::USER_TYPE < 1) {
+            if (!isset($user) || $user::USER_TYPE > 2 || $user::USER_TYPE < 1) {
+              echo "You Have No Access To This Page<br/>";
+              exit();
+            }
+          }elseif ($page->type == "student") {// Admin OR Teacher
+            if (!isset($user) || $user::USER_TYPE > 3 || $user::USER_TYPE < 1) {
               echo "You Have No Access To This Page<br/>";
               exit();
             }
