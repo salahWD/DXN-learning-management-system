@@ -1320,11 +1320,11 @@ class Item {
 
   /* ============== Retrieve Methods ============== */
 
-  public function get_item_type($course, $order) {
+  static public function get_item_type_id($course, $order) {
     /*
       takes   : $order wich is item order && $course wich is course id
-      does    : checks and gets given item type
-      returns : [item_type, item_id] | false
+      does    : gets item type
+      returns : true | false
     */
 
     global $conn;
@@ -1335,9 +1335,7 @@ class Item {
 
     if ($stmt->rowCount() > 0) {
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
-      $this->id     = $result["item_id"];
-      $this->type   = $result["item_type"];
-      return true;
+      return ["id" => $result["item_id"], "type" => $result["item_type"]];
     }else {
       return false;
     }
@@ -2182,12 +2180,13 @@ class ExamProces {
 
   public $id;
   public $min_mark;
-  public $compare_table = [];// array of 4 columns [q_id, a_id, a_status, student_a = 1]
+  public $compare_table = [];// Assocative Array [Q_id => [Q_obj.answers, Q_mark]]
 
   /* =========== Process Methods =========== */
 
   public function coompare_answers($student_answers) {
     /*
+      takes   : student answers and compare it with compare_table answers
       does    : fills "compare table" with [student answer]
     */
     foreach ($this->compare_table as $index => $question):

@@ -2,14 +2,15 @@
 
 $course_id  = $URL[2];
 $item_order = $URL[3];
-$item = new Item();
+$item       = Item::get_item_type_id($course_id, $item_order);
 
-if ($item->get_item_type($course_id, $item_order)) {
+if ($item) {
 
-  if ($item->type == 1) {
+  if ($item["type"] == 1) {
   
     $lecture = new Lecture();
-    $lecture->set_data($lecture->get_lecture($course_id, $item_order));
+    $lecture->id = $item["id"];
+    $lecture->set_data($lecture->get_lecture());
   
     ?>
     <div class="container">
@@ -32,70 +33,35 @@ if ($item->get_item_type($course_id, $item_order)) {
     <?php
   }else {// if it's an exam
     
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-      
-      $exam = new Exam();
-      $exam->set_data($exam->get_exam($course_id, $item_order));
-  
-      $post_quests = [];
-  
-      echo "<pre>";
-      print_r($_POST);
-      echo "</pre>";
-      exit();
-      foreach($_POST["answers"] as $i => $question):
-  
-        $quest = new Question();
-        $quest->id = $i;
-  
-        if (is_array($question) && COUNT($question) > 0) {
-          foreach($question as $ansr):
-            $ans = new Answer();
-            $ans->set_data(["id" => $ansr, "question_id" => $i]);
-            array_push($quest->answers, $ans);
-          endforeach;
-        }else {
-          $ansr = new Answer();
-          $ansr->set_data(["id" => $question, "question_id" => $i]);
-          array_push($quest->answers, $ansr);
-        }
-  
-        $post_quests[$quest->id] = $quest;
-      endforeach;
-      
-      if ($user::USER_TYPE <= 2) {
-        $result = $exam->compare_answers($exam::ADMIN, $post_quests);
-      }else {
-        $result = $exam->compare_answers($user->student_id, $post_quests);
-      }
-  
-      $_SESSION["exam_result"] = $result;
+    $exam = new Exam();
+    $exam->id = $item["id"];
+    $exam->set_data($exam->get_exam());
+    $exam->get_questions();
+    ?>
+    <div class="container">
 
-      header("Location: " . theURL . language . "/exam-result");
-      exit();
-  
-    }else {
-  
-      $exam = new Exam();
-      $exam->id = $exam->get_id_by_order($course_id, $item_order);
-      $exam->get_questions();
-      ?>
-      <div class="container">
-
-        <div class="result d-none" id="result">
-          <h2 class="text-center mb-3"><?php echo $exam->title;?></h2>
-          <div class="alert text-center" id="result-alert">
-            <h4 class="fw-bold" id="result-status"></h4>
-            <p class="lead" id="result-text"></p>
-            <div class="card bordered" id="result-itemsContaioner">
-              <ul class="list-unstyled list-group list-group-flush" id="result-items">
-              </ul>
-            </div>
+      <div class="result d-none" id="result">
+        <div class="text-center mb-4 mt-3">
+          <h2 class="under-line-title d-inline"><?php echo $exam->title;?></h2>
+        </div>
+        <div class="alert text-center" id="result-alert">
+          <h4 class="fw-bold" id="result-status"></h4>
+          <p class="lead" id="result-text"></p>
+          <div class="card bordered" id="result-itemsContaioner">
+            <ul class="list-unstyled list-group list-group-flush" id="result-items">
+            </ul>
           </div>
         </div>
+        <div class="d-flex justify-content-around mt-4 pb-4">
+          <a class="btn btn-success" href="<?php echo theURL . language . "/view/" . $exam->course_id . "/" . intval($item_order) + 1;?>">Next</a>
+          <a class="btn btn-danger" href="<?php echo theURL . language . "/view/" . $exam->course_id . "/" . $item_order;?>">Redo</a><!-- come -->
+        </div>
+      </div>
 
-
-        <h2 class="text-center mb-3 mt-3 h2"><?php echo $exam->title;?></h2>
+      <div id="exam">
+        <div class="text-center mb-3 mt-3">
+          <h2 class="under-line-title d-inline"><?php echo $exam->title;?></h2>
+        </div>
         <form method="POST" id="answersForm" data-value="<?php echo $exam->id;?>">
           <input type="hidden" >
           <?php foreach($exam->questions as $i => $quest):?>
@@ -114,11 +80,12 @@ if ($item->get_item_type($course_id, $item_order)) {
         </form>
         <div class="d-flex justify-content-around mt-4 pb-4">
           <button class="btn btn-primary" id="send" type="button">Send</button>
-          <button class="btn btn-danger" id="cancel" type="button">Cancel</button>
+          <a class="btn btn-danger" href="<?php echo theURL . language . "/course/" . $exam->course_id;?>">Cancel</a>
         </div>
       </div>
-      <?php
-    }
+    </div>
+    
+    <?php
   }
 
 }else {?>
