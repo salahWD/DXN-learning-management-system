@@ -17,8 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       if ($markes[0] >= $exam->min_mark) {
         /* Stage Exam */
           $item = new Item();
-          $item->id = intval($_POST["exam_id"]);
-          $item->type = Exam::TYPE;
+          $item->id     = intval($_POST["exam_id"]);
+          $item->type   = Exam::TYPE;
           $item->item_pass($user->student_id);
         /* End Stage Exam */
       }

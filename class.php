@@ -1300,34 +1300,37 @@ class Item {
 
   public function item_pass($student_id) {
     /*
-    takes: student id & $this->type
+    takes: student id & $this->type & $this->id
     does: insert into student_pass table
     returns: true | false
     */
 
     global $conn;
 
-    $order_of_insertation = $conn->prepare(
-      "SELECT MAX(items_order.order) AS `order` FROM items_order
-      INNER JOIN student_pass ON student_pass.item_order_id = items_order.id
-      WHERE student_pass.student_id = ? AND items_order.course_id = (SELECT course_id FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = ?)");
-    $result = $order_of_insertation->execute([$student_id, $this->id, $this->type]);
-    
-    if ($result->rowCoun() > 0) {
-
-      $order_of_last_item_in_course = $result->fetch(PDO::FETCH_NUM)[0];
-
-
+    $max_course_order = $conn->prepare(// items_order.order AS `current_order`
+      "SELECT MAX(items_order.order) AS `max_course_order`FROM items_order
+      WHERE course_id = (SELECT course_id FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = ?)");
       
-      $insert_finish_item = $conn->prepare(
-        "INSERT INTO student_pass (student_id, item_order_id) VALUES (?, (SELECT id FROM items_order WHERE item_id = ? AND item_type = ?))");
-      $result = $insert_finish_item->execute([$student_id, $this->id, $this->type]);
+    $result = $max_course_order->execute([$student_id, $this->id, $this->type]);
 
-      if ($result) {
-        return true;
-      }else {
-        return false;
-      }
+    if ($result) {
+
+      $max_course_order = $max_course_order->fetch(PDO::FETCH_ASSOC)["max_course_order"];
+      $this->order = $max_course_order;
+      // if (the current order == $this->order) {
+        
+        // $blank_recorde_insert_studentPass = $conn->prepare("INSERT INTO student_pass (student_id, item_order_id) VALUES (?, NULL)");
+        // $blank_recorde_insert_studentPass->execute([$student_id]);
+        
+      // }
+
+      // $insert_finish_item = $conn->prepare(
+      //   "INSERT INTO student_pass (student_id, item_order_id) VALUES (?, (SELECT id FROM items_order WHERE item_id = ? AND item_type = ?))");
+      // $result = $insert_finish_item->execute([$student_id, $this->id, $this->type]);
+
+      return $result;
+      
+
     }else {
       return false;
     }

@@ -57,7 +57,7 @@ $(document).ready(function(){
           if (status == "status" || xhr.status == 200) {
             
             data = JSON.parse(data);
-            
+            // console.log(data);
             function QuestionElement(id, answers, mark) {
               let element = document.createElement("li");
               element.classList.add("list-grou-item");
