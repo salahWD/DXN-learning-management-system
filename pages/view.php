@@ -37,40 +37,31 @@ if ($item) {
     $exam->id = $item["id"];
     $exam->set_data($exam->get_exam());
     $exam->get_questions();
+    
+    // set exam info in session to push it to exam_proces to presec it
+    unset($_SESSION["exam_result"]);
+    $_SESSION["exam_result"]["course_id"]  = $course_id;
+    $_SESSION["exam_result"]["exam_id"]    = $exam->id;
+    $_SESSION["exam_result"]["exam_title"] = $exam->title;
     ?>
     <div class="container">
-
-      <div class="result d-none" id="result">
-        <div class="text-center mb-4 mt-3">
-          <h2 class="under-line-title d-inline"><?php echo $exam->title;?></h2>
-        </div>
-        <div class="alert text-center" id="result-alert">
-          <h4 class="fw-bold" id="result-status"></h4>
-          <p class="lead" id="result-text"></p>
-          <div class="card bordered" id="result-itemsContaioner">
-            <ul class="list-unstyled list-group list-group-flush" id="result-items">
-            </ul>
-          </div>
-        </div>
-        <div class="d-flex justify-content-around mt-4 pb-4">
-          <a class="btn btn-success" href="<?php echo theURL . language . "/view/" . $exam->course_id . "/" . intval($item_order) + 1;?>">Next</a>
-          <a class="btn btn-danger" href="<?php echo theURL . language . "/view/" . $exam->course_id . "/" . $item_order;?>">Redo</a><!-- come -->
-        </div>
-      </div>
 
       <div id="exam">
         <div class="text-center mb-3 mt-3">
           <h2 class="under-line-title d-inline"><?php echo $exam->title;?></h2>
         </div>
-        <form method="POST" id="answersForm" data-value="<?php echo $exam->id;?>">
-          <input type="hidden" >
+        <form method="POST" id="answersForm" action="<?php echo theURL . language . "/exam-proces";?>">
           <?php foreach($exam->questions as $i => $quest):?>
-            <div class="question-show p-2" data-value="<?php echo $quest->id;?>">
+            <div class="question-show p-2">
               <div class="fw-bold question-text h4"><?php echo $i+1 . ". " . $quest->question;?></div>
               <?php foreach($quest->answers as $x => $ansr):?>
                 <div class="form-check">
-                  <input value="<?php echo $ansr->id?>" <?php if ($quest->multible_option == 2) {echo "type=\"checkbox\"";}else {echo 'type="radio" name="question_' . $quest->id . '"';}?>
-                  id="<?php echo $i?>/<?php echo $x;?>">
+                <?php
+                  if ($quest->multible_option == 2):?>
+                    <input id="<?php echo $i?>/<?php echo $x;?>" name="questions[<?php echo $quest->id;?>][]" value="<?php echo $ansr->id?>" type="checkbox">
+                  <?php else:?>
+                    <input id="<?php echo $i?>/<?php echo $x;?>" name="questions[<?php echo $quest->id;?>]" value="<?php echo $ansr->id?>" type="radio">
+                  <?php endif;?>
                   <label class="fw-normal" for="<?php echo $i?>/<?php echo $x;?>"><?php echo $ansr->answer;?></label>
                 </div>
               <?php endforeach;?>
@@ -79,7 +70,7 @@ if ($item) {
           <?php endforeach;?>
         </form>
         <div class="d-flex justify-content-around mt-4 pb-4">
-          <button class="btn btn-primary" id="send" type="button">Send</button>
+          <button class="btn btn-primary" id="send" type="submit" form="answersForm">Send</button>
           <a class="btn btn-danger" href="<?php echo theURL . language . "/course/" . $exam->course_id;?>">Cancel</a>
         </div>
       </div>

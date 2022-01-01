@@ -2189,30 +2189,69 @@ class ExamProces {
       takes   : student answers and compare it with compare_table answers
       does    : fills "compare table" with [student answer]
     */
+
+    # question loop 
     foreach ($this->compare_table as $index => $question):
+
+      $grade_part = (100 / count($question[0]->answers));
+
+      # answers loop
         foreach ($question[0]->answers as $answer):
-          if ($answer["is_right"] == 2) {
-            if (in_array($answer["id"], $student_answers[$question[0]->id])) {
-              $question[1] = intval($question[1]) + (100 / count($question[0]->answers));
+
+          if (is_array($student_answers[$question[0]->id])) {// it's multi choices
+            if ($answer["is_right"] == 2) {// 2 = answer is right
+              if (in_array($answer["id"], $student_answers[$question[0]->id])) {
+                $question[1] = intval($question[1]) + $grade_part;
+              }
+            }else {
+              if (!in_array($answer["id"], $student_answers[$question[0]->id])) {
+                $question[1] = intval($question[1]) + $grade_part;
+              }
             }
           }else {
-            if (!in_array($answer["id"], $student_answers[$question[0]->id])) {
-              $question[1] = intval($question[1]) + (100 / count($question[0]->answers));
+          
+            if ($answer["is_right"] == 2) {// 2 = answer is right
+
+              if ($answer["id"] == $student_answers[$question[0]->id]) {
+                $question[1] = intval($question[1]) + $grade_part;
+              }
+
+            }else {
+
+              if ($answer["id"] != $student_answers[$question[0]->id]) {
+                $question[1] = intval($question[1]) + $grade_part;
+              }
+            }
+          }
+          
+        endforeach;
+        
+        // Remove Other Answers After All Calculations And Let The Ones That Was Selected From The User
+        foreach ($this->compare_table[$index][0]->answers as $x => $ansr):
+          if (is_array($student_answers[$index])) {
+            if (!in_array($ansr["id"], $student_answers[$index])) {
+              unset($this->compare_table[$index][0]->answers[$x]);
+            }
+          }else {
+            if ($student_answers[$index] != $ansr["id"]) {
+              unset($this->compare_table[$index][0]->answers[$x]);
             }
           }
         endforeach;
-        $this->compare_table[$index][1] = $question[1];
+        
+        $this->compare_table[$index][1] = ceil($question[1]);
     endforeach;
   }
 
   public function some_markes() {
     $full_marke = 0;
-    $markes = [];
+    
     foreach ($this->compare_table as $index => $question):
+
         $full_marke += (100 / count($this->compare_table)) * ($question[1] / 100);
-        array_push($markes, [$question[0]->id, $question[0]->answers, (100 / count($this->compare_table)) * ($question[1] / 100)]);
+      
     endforeach;
-    return [$full_marke, $markes];
+    return $full_marke;
   }
 
   /* =========== Retrieve Methods =========== */

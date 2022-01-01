@@ -151,24 +151,28 @@ input:focus {
 .result .list-group {
   padding: 20px;
 }
-.result .list-group .list-grou-item {
-  display: flex;
-  justify-content: space-evenly;
-  column-gap: 40px;
-  margin-top: 10px;
-  background: #eee;
-  padding: 10px 14px;
-}
+
 .result .list-group .list-grou-item {
   display: grid;
-  align-items: center;
+  overflow: hidden;
   column-gap: 40px;
   margin-top: 10px;
-  background: #eee;
   padding: 10px 14px;
+  align-items: center;
 }
 .result .list-group .list-grou-item > div {
   width: 100%;
+}
+
+.grade {
+  top: -7px;
+  left: 20px;
+  font-weight: bold;
+  position: absolute;
+  border-radius: 10px;
+  letter-spacing: 2px;
+  padding: 12px 12px 6px;
+  background: #39bf68!important;
 }
 
 /* End View Exams */
