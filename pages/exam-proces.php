@@ -3,7 +3,8 @@
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (isset($_POST["questions"]) && !empty($_POST["questions"]) && is_array($_POST["questions"])) {
-      
+
+      /* Proces Answers */
       $exam = new ExamProces();
       $exam->id = intval($_SESSION["exam_result"]["exam_id"]);
       $exam->min_mark = $exam->get_min_mark();

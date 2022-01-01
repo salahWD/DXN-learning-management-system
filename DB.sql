@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Nov 14, 2021 at 07:27 PM
+-- Generation Time: Nov 27, 2021 at 06:18 PM
 -- Server version: 10.4.10-MariaDB
 -- PHP Version: 7.3.12
 
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `answers` (
   `is_right` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `question` (`question_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `answers`
@@ -79,7 +79,16 @@ INSERT INTO `answers` (`id`, `question_id`, `answer`, `is_right`) VALUES
 (13, 11, '111111111', 2),
 (14, 11, ' 22222222222', 1),
 (15, 12, 'dfaf', 1),
-(16, 12, 'asdfasf', 2);
+(16, 12, 'asdfasf', 2),
+(17, 9, 'this is answer 4 ', 1),
+(18, 12, 'this is the third answer', 1),
+(19, 13, 'this answer is true', 2),
+(20, 13, 'this answer is false', 1),
+(21, 14, 'this answer is true', 2),
+(22, 14, 'this answer is false', 1),
+(23, 13, 'asdasdasd', 1),
+(38, 22, 'answer one [true]', 2),
+(39, 22, 'answer two [false]', 1);
 
 -- --------------------------------------------------------
 
@@ -142,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `exams` (
   `exam_percent` int(11) NOT NULL,
   `date` date NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `exams`
@@ -150,7 +159,8 @@ CREATE TABLE IF NOT EXISTS `exams` (
 
 INSERT INTO `exams` (`id`, `title`, `description`, `exam_percent`, `date`) VALUES
 (1, 'testing exam', 'test', 80, '2021-07-05'),
-(8, 'exam 1', 'asdasdad', 50, '2021-07-06');
+(8, 'exam 1', 'asdasdad', 50, '2021-07-06'),
+(9, 'test', 'test', 10, '2021-11-16');
 
 -- --------------------------------------------------------
 
@@ -272,7 +282,7 @@ CREATE TABLE IF NOT EXISTS `items_order` (
   `order` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `items_order_courses` (`course_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `items_order`
@@ -282,8 +292,7 @@ INSERT INTO `items_order` (`id`, `course_id`, `item_id`, `item_type`, `order`) V
 (2, 1, 1, 2, 1),
 (8, 2, 7, 1, 1),
 (15, 2, 8, 2, 2),
-(18, 4, 14, 1, 1),
-(19, 4, 15, 1, 2);
+(35, 2, 9, 2, 3);
 
 -- --------------------------------------------------------
 
@@ -300,16 +309,14 @@ CREATE TABLE IF NOT EXISTS `lectures` (
   `thumbnail` varchar(255) DEFAULT NULL,
   `date` date NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `lectures`
 --
 
 INSERT INTO `lectures` (`id`, `title`, `description`, `video`, `thumbnail`, `date`) VALUES
-(7, 'lecture 1', 'tesst', 'Snn6OmJenuh.mp4', '9EmYEaHXUMz.jpg', '2021-11-14'),
-(14, 'test 1', 'test 1', 'q54UrX1HwwW.mp4', 'wl6faUozZOG.jpg', '2021-11-14'),
-(15, 'test 2', 'test 2', 'BoEg0YLQrHz.mp4', 'uqkfM3hB1b9.jpg', '2021-11-14');
+(7, 'lecture 1', 'tesst', 'Snn6OmJenuh.mp4', '9EmYEaHXUMz.jpg', '2021-11-15');
 
 -- --------------------------------------------------------
 
@@ -333,7 +340,7 @@ CREATE TABLE IF NOT EXISTS `pages` (
   `featured_img` varchar(255) DEFAULT NULL,
   `language` varchar(5) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `pages`
@@ -349,19 +356,20 @@ INSERT INTO `pages` (`id`, `name`, `title`, `meta`, `type`, `components`, `argum
 (7, 'login-admin', 'Admin Login', NULL, 'main', 2, 0, 'login-admin.php', NULL, NULL, NULL, NULL, 'ar'),
 (8, 'logout', 'Logout', NULL, 'only-file', 1, 0, 'logout.php', NULL, NULL, NULL, NULL, 'ar'),
 (9, 'exam-manage', 'Manage Exam', NULL, 'manage', 1, 2, 'exam-manage.php', NULL, NULL, NULL, NULL, 'ar'),
-(10, 'exam-add', 'Add Exam', NULL, 'manage', 1, 0, 'exam-create.php', NULL, NULL, NULL, NULL, 'ar'),
+(10, 'exam-add', 'Add Exam', NULL, 'manage', 1, 1, 'exam-create.php', NULL, NULL, NULL, NULL, 'ar'),
 (11, 'lecture-add', 'Add Lecture', NULL, 'manage', 1, 1, 'lecture-create.php', NULL, NULL, NULL, NULL, 'ar'),
 (12, 'lecture-manage', 'Manage LActure', NULL, 'manage', 1, 1, 'lecture-manage.php', NULL, NULL, NULL, NULL, 'ar'),
 (13, 'dashboard-admin', 'Admin Dashboard', NULL, 'admin', 1, 0, 'dashboard-admin.php', NULL, NULL, NULL, NULL, 'ar'),
 (14, 'dashboard-student', 'Student Dashboard', NULL, 'student', 1, 0, 'dashboard-student.php', NULL, NULL, NULL, NULL, 'ar'),
-(15, 'dashboard-teacher', 'Teacher Dashboard', NULL, 'teacher', 1, 0, 'dashboard-teacher.php', NULL, NULL, NULL, NULL, 'ar'),
+(15, 'dashboard-teacher', 'Teacher Dashboard', NULL, 'manage', 1, 0, 'dashboard-teacher.php', NULL, NULL, NULL, NULL, 'ar'),
 (16, 'item-delete', 'Delete Item', NULL, 'manage', 1, 2, 'item-delete.php', NULL, NULL, NULL, NULL, 'ar'),
 (19, 'view', 'View Item', NULL, 'login', 1, 2, 'view.php', NULL, NULL, NULL, NULL, 'ar'),
 (21, 'lecture-done', 'finish lecture', NULL, 'only-file', 3, 0, 'lecture-done.php', NULL, NULL, NULL, NULL, 'ar'),
 (22, 'exam-result', 'show exam result', NULL, 'login', 1, 0, 'exam-result.php', NULL, NULL, NULL, NULL, 'ar'),
 (23, 'course', 'show course', NULL, 'login', 1, 1, 'course-show.php', NULL, NULL, NULL, NULL, 'ar'),
 (24, 'manage-course', 'Manage Courses', NULL, 'manage', 1, 0, 'manage-course.php', NULL, NULL, NULL, NULL, 'ar'),
-(25, 'manage-group', '', NULL, 'manage', 1, 0, 'groups-manage.php', NULL, NULL, NULL, NULL, 'ar');
+(25, 'manage-group', '', NULL, 'manage', 1, 0, 'groups-manage.php', NULL, NULL, NULL, NULL, 'ar'),
+(26, 'exam-proces', '', NULL, NULL, 3, 0, 'exam-proces.php', NULL, NULL, NULL, NULL, 'ar');
 
 -- --------------------------------------------------------
 
@@ -461,7 +469,7 @@ CREATE TABLE IF NOT EXISTS `questions` (
   `multible_option` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `exam` (`exam_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `questions`
@@ -470,10 +478,13 @@ CREATE TABLE IF NOT EXISTS `questions` (
 INSERT INTO `questions` (`id`, `exam_id`, `question`, `important`, `order`, `multible_option`) VALUES
 (4, 1, 'QuestionQuestion', 1, 2, 2),
 (7, 1, 'Question 1', 0, 1, 1),
-(9, 8, 'not a question', 0, 1, 2),
+(9, 8, 'just a question', 0, 1, 2),
 (10, 8, ' adsas asd asd Question', 0, 2, 1),
 (11, 8, ' 22222Question', 0, 3, 2),
-(12, 8, 'Question', 0, 4, 1);
+(12, 8, ' here is the question title', 0, 4, 2),
+(13, 1, 'this is question 3', 0, 3, 1),
+(14, 1, 'this is question 3', 0, 4, 1),
+(22, 9, 'testing Question', 0, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -531,18 +542,20 @@ DROP TABLE IF EXISTS `student_pass`;
 CREATE TABLE IF NOT EXISTS `student_pass` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `student_id` int(11) NOT NULL,
-  `item_order_id` int(11) NOT NULL,
+  `item_order_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `student_id` (`student_id`),
   KEY `item_order` (`item_order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `student_pass`
 --
 
 INSERT INTO `student_pass` (`id`, `student_id`, `item_order_id`) VALUES
-(1, 1, 8);
+(1, 1, 8),
+(6, 1, 15),
+(7, 1, 35);
 
 -- --------------------------------------------------------
 

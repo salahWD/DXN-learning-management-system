@@ -1126,72 +1126,6 @@ class Course {
 
   }// Number Permission
 
-  /*=========== Delete Methods ===========*/
-
-  public function delete_course() {
-    /*
-      does  : removes all course info
-      return: true | false
-    */
-
-    global $conn;
-    
-    # Delete Teachers Permission
-    $stmt = $conn->prepare("DELETE FROM teachers_courses WHERE course_id = ?");
-    $result = $stmt->execute([$this->id]);
-    if (!$result) {
-      return false;
-    }
-    
-    /*
-    DELETE `one`, two FROM three
-      INNER JOIN `one` ON `one`.id = three.name
-      INNER JOIN two ON two.id = three.age
-    WHERE three.id = 9
-    */
-
-
-    # Delete Lectures
-    $stmt = $conn->prepare(
-      "DELETE FROM lectures
-        INNER JOIN items_order AS item ON item.item_id = lectures.id
-      WHERE item.item_type = ? AND item.course_id = ?");
-    $result = $stmt->execute([Lecture::TYPE, $this->id]);
-    if (!$result) {
-      return false;
-    }
-    
-    # Delete Exams
-    $stmt = $conn->prepare(
-      "DELETE item, exams, questions, answers FROM exams
-        INNER JOIN items_order AS item ON item.item_id = exams.id
-        INNER JOIN questions ON questions.exam_id = exams.id
-        INNER JOIN answers ON answers.question_id = questions.id
-      WHERE item.item_type = ? AND item.course_id = ?");
-    $result = $stmt->execute([Exam::TYPE, $this->id]);
-    if (!$result) {
-      return false;
-    }
-    # Delete Exams
-    $stmt = $conn->prepare(
-      "DELETE FROM exams
-        INNER JOIN items_order AS item ON item.item_id = exams.id
-      WHERE item.item_type = ? AND item.course_id = ?");
-    $result = $stmt->execute([Exam::TYPE, $this->id]);
-    if (!$result) {
-      return false;
-    }
-    
-    # Delete Course Data
-    $stmt = $conn->prepare("DELETE FROM courses WHERE courses.id = ?");
-    $result = $stmt->execute([$this->id]);
-    if (!$result) {
-      return false;
-    }
-    return true;
-
-  }// Boolian true | false
-
   public function get_items_all() {
     /*
       1- Get ALL Lectures
@@ -1281,6 +1215,73 @@ class Course {
 
   }// get all items and mark all finished 
 
+
+  /*=========== Delete Methods ===========*/
+
+  public function delete_course() {
+    /*
+      does  : removes all course info
+      return: true | false
+    */
+
+    global $conn;
+    
+    # Delete Teachers Permission
+    $stmt = $conn->prepare("DELETE FROM teachers_courses WHERE course_id = ?");
+    $result = $stmt->execute([$this->id]);
+    if (!$result) {
+      return false;
+    }
+    
+    /*
+    DELETE `one`, two FROM three
+      INNER JOIN `one` ON `one`.id = three.name
+      INNER JOIN two ON two.id = three.age
+    WHERE three.id = 9
+    */
+
+
+    # Delete Lectures
+    $stmt = $conn->prepare(
+      "DELETE FROM lectures
+        INNER JOIN items_order AS item ON item.item_id = lectures.id
+      WHERE item.item_type = ? AND item.course_id = ?");
+    $result = $stmt->execute([Lecture::TYPE, $this->id]);
+    if (!$result) {
+      return false;
+    }
+    
+    # Delete Exams
+    $stmt = $conn->prepare(
+      "DELETE item, exams, questions, answers FROM exams
+        INNER JOIN items_order AS item ON item.item_id = exams.id
+        INNER JOIN questions ON questions.exam_id = exams.id
+        INNER JOIN answers ON answers.question_id = questions.id
+      WHERE item.item_type = ? AND item.course_id = ?");
+    $result = $stmt->execute([Exam::TYPE, $this->id]);
+    if (!$result) {
+      return false;
+    }
+    # Delete Exams
+    $stmt = $conn->prepare(
+      "DELETE FROM exams
+        INNER JOIN items_order AS item ON item.item_id = exams.id
+      WHERE item.item_type = ? AND item.course_id = ?");
+    $result = $stmt->execute([Exam::TYPE, $this->id]);
+    if (!$result) {
+      return false;
+    }
+    
+    # Delete Course Data
+    $stmt = $conn->prepare("DELETE FROM courses WHERE courses.id = ?");
+    $result = $stmt->execute([$this->id]);
+    if (!$result) {
+      return false;
+    }
+    return true;
+
+  }// Boolian true | false
+
 }
 
 
@@ -1297,21 +1298,39 @@ class Item {
   public $day_before;
   public $errors = [];
 
-  public function item_pass($user_id) {
+  public function item_pass($student_id) {
     /*
-    takes: $user_id wich is student id
+    takes: student id & $this->type & $this->id
     does: insert into student_pass table
     returns: true | false
     */
 
     global $conn;
 
-    $insert_finish_item = $conn->prepare(
-      "INSERT INTO student_pass (student_id, item_order_id) VALUES (?, (SELECT id FROM items_order WHERE course_id = ? AND `order` = ?))");
-
-    if ($insert_finish_item->execute([$user_id, $this->course_id, $this->order])) {
+    $max_course_order = $conn->prepare(// items_order.order AS `current_order`
+      "SELECT MAX(items_order.order) AS `max_course_order`FROM items_order
+      WHERE course_id = (SELECT course_id FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = ?)");
       
-      return true;
+    $result = $max_course_order->execute([$student_id, $this->id, $this->type]);
+
+    if ($result) {
+
+      $max_course_order = $max_course_order->fetch(PDO::FETCH_ASSOC)["max_course_order"];
+      $this->order = $max_course_order;
+      // if (the current order == $this->order) {
+        
+        // $blank_recorde_insert_studentPass = $conn->prepare("INSERT INTO student_pass (student_id, item_order_id) VALUES (?, NULL)");
+        // $blank_recorde_insert_studentPass->execute([$student_id]);
+        
+      // }
+
+      // $insert_finish_item = $conn->prepare(
+      //   "INSERT INTO student_pass (student_id, item_order_id) VALUES (?, (SELECT id FROM items_order WHERE item_id = ? AND item_type = ?))");
+      // $result = $insert_finish_item->execute([$student_id, $this->id, $this->type]);
+
+      return $result;
+      
+
     }else {
       return false;
     }
@@ -1338,6 +1357,67 @@ class Item {
       return ["id" => $result["item_id"], "type" => $result["item_type"]];
     }else {
       return false;
+    }
+
+  }
+
+  static public function is_allowed($student_id, $course_id, $item_order) {
+    /*
+      does    : gets item status using student_pass table
+      returns : true | false
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT (MAX(items_order.order) + 1) AS `max_order` FROM items_order
+      INNER JOIN student_pass ON student_pass.item_order_id = items_order.id
+      WHERE items_order.course_id = ? AND student_pass.student_id = ?");
+    $stmt->execute([$course_id, $student_id]);
+
+    if ($stmt->rowCount() > 0) {
+      $result = $stmt->fetch(PDO::FETCH_NUM)[0];
+
+      if ($item_order <= $result) {
+        return true;
+      }else {
+        return false;
+      }
+    }else {
+
+      return false;
+
+    }
+
+  }
+
+  /* not used yet  */
+  static public function get_status($student_id, $course_id, $item_order) {
+    /*
+      does    : gets item status using student_pass table
+      returns : true | false
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT (MAX(items_order.order) + 1) AS `max_order` FROM items_order
+      INNER JOIN student_pass ON student_pass.item_order_id = items_order.id
+      WHERE items_order.course_id = ? AND student_pass.student_id = ?");
+    $stmt->execute([$course_id, $student_id]);
+
+    if ($stmt->rowCount() > 0) {
+      $result = $stmt->fetch(PDO::FETCH_NUM)[0];
+
+      if ($item_order == $result) {
+        return 2;
+      }elseif ($item_order < $result) {
+        return 3;
+      }else {
+        return 1;
+      }
+    }else {
+      return 1;
     }
 
   }
@@ -1535,36 +1615,6 @@ class Lecture extends Item {
 
   /* ============== Retrieve Methods ============== */
 
-  public static function get_lectures($id = NULL) {
-    /*
-      takes   : $id wich is teacher id to get hes lectures
-      does    : gets all lectures of spesefic owner or all lectures in general
-      returns : array of lectures info
-    */
-
-    global $conn;
-    
-      
-      if ($id == self::ALL_COURSES) {
-        $stmt = $conn->prepare("SELECT lectures.* FROM lectures");
-        $stmt->execute();
-      }else {
-        $stmt = $conn->prepare(
-          "SELECT lectures.*
-          FROM teachers_courses
-          INNER JOIN courses ON courses.id = teachers_courses.course_id
-          INNER JOIN lectures ON lectures.course_id = courses.id
-          WHERE teachers_courses.teacher_id = ?");
-        $stmt->execute([$id]);
-      }
-
-    if ($stmt->rowCount() > 0) {
-      return $stmt->fetchALL(PDO::FETCH_ASSOC);
-    }else {
-      return false;
-    }
-  }
-
   public function get_lecture() {
     /*
       returns : array containes lecture info
@@ -1715,155 +1765,6 @@ class Exam extends Item {
     }
   }
   
-  public function compare_answers($user, $compare) {
-    /*
-    takes : $user wich is student_id
-    does  : inserts into exams_take table
-    returns: info [percent, success] | false
-    */
-
-    global $conn;
-
-    // get Answers And Questions
-    $get_db_questions = $conn->prepare(
-      "SELECT questions.id, questions.important AS important, answers.id AS answer_id FROM questions
-      INNER JOIN answers ON answers.question_id = questions.id
-      INNER JOIN exams ON questions.exam_id = exams.id 
-      WHERE exams.id = ? AND answers.is_right = 2");
-    $get_db_questions->execute([$this->id]);
-    
-    
-    if ($get_db_questions->rowCount() > 0) {
-    
-      $db_answers = $get_db_questions->fetchAll(PDO::FETCH_ASSOC);
-      
-      $get_db_answers_count = $conn->prepare(
-        "SELECT COUNT(answers.id) AS answers_count FROM answers
-        INNER JOIN questions ON questions.id = answers.question_id
-        WHERE questions.exam_id = ?");
-      $get_db_answers_count->execute([$this->id]);
-  
-      $answers_count = $get_db_answers_count->fetch(PDO::FETCH_ASSOC)["answers_count"];
-      
-      $obj_cash   = [];
-
-      // creating objecties for DB answers
-      foreach($db_answers as $quest):
-        if (in_array($quest["id"], array_keys($obj_cash))) {
-          $obj = new Answer();
-          $obj->set_data(["id" => $quest["answer_id"], "question_id" => $quest["id"], "is_right" => 2]);
-          array_push($obj_cash[$quest["id"]]->answers, $obj);
-        }else {
-          $obj = new Question($quest);
-          $obj->set_data(["id" => $quest["id"], "important" => $quest["important"]]);
-          $ans_obj = new Answer();
-          $ans_obj->set_data(["id" => $quest["answer_id"], "question_id" => $quest["id"], "is_right" => 2]);
-          array_push($obj->answers, $ans_obj);
-          $obj_cash[$quest["id"]] = $obj;
-        }
-      endforeach;
-
-      $result = [];
-
-      foreach($obj_cash as $i => $quest):
-        // if ($quest->important == 1) {
-        //   $full_mark_slices_count += 2;
-        // }else {
-        //   $full_mark_slices_count += 1;
-        // }
-        if ($quest->id == $compare[$i]->id) {
-          if (COUNT($quest->answers) > 1) {// db answer is multible
-            if (COUNT($compare[$i]->answers) > 1) {
-
-              $post_answers_ids = [];
-              foreach($compare[$i]->answers as $post_ansr):
-                array_push($post_answers_ids, $post_ansr->id);
-              endforeach;
-              
-              $db_answers = [];
-              foreach($quest->answers as $db_ansr):
-                array_push($db_answers, $db_ansr->id);
-              endforeach;
-
-              $t = 0;
-              $f = 0;
-              foreach($post_answers_ids as $post_ansr):
-                if (in_array($post_ansr, $db_answers)) {
-                  $t += 1;
-                }else {
-                  $f += 1;
-                }
-              endforeach;
-              
-              $tf     = $answers_count - count($quest->answers);
-              $result[$i] = round((($t + $tf - $f) / $answers_count) * 100);
-
-            }else {
-              // $result[$i] = "Answer Is single But Db Is't";
-              $result[$i] = 0;
-            }
-          }else {// db answer is single
-            if (COUNT($compare[$i]->answers) < 2) {
-              if ($quest->answers[0]->id == $compare[$i]->answers[0]->id) {
-                $result[$i] = 100;
-              }else {
-                // $result[$i] = "Not The Same Answer";
-                $result[$i] = 0;
-              }
-            }else {
-              // $result[$i] = "your answer is multible but DB is't";
-              $result[$i] = 0;
-            }
-          }
-        }else  {
-          // $result[$i] = "Not The Same Id";
-          $result[$i] = 0;
-        }
-      endforeach;
-      
-      if ($user != self::ADMIN) {
-        
-        $exams_take = $conn->prepare(
-          "INSERT INTO exam_take (exam_id, student_id, `date`) VALUES ( :exam, :student, NOW())");
-        $exams_take->execute([":exam" => $this->id, ":student" => $user]);
-        $exams_take_id = $conn->lastInsertId();
-        
-        $conn->beginTransaction();
-        $sql    = "INSERT INTO exams_answers (exam_take, question_id, `right`) VALUES (?, ?, ?)";
-        $add_try_answers = $conn->prepare($sql);
-        
-        foreach($result as $i => $ans):
-          $add_try_answers->execute([
-            $exams_take_id,
-            $i,
-            $ans
-          ]);
-        endforeach;
-        $conn->commit();
-      }
-
-      $returned = [
-        "percent" => (array_sum($result) / COUNT($compare)),
-        "exam_title" => $this->title,
-        "require_percent" => $this->percent
-      ];
-
-      if ((array_sum($result) / COUNT($compare)) >= $this->percent) {
-        
-        $this->item_pass($user);
-        $returned["success"] = "true";
-      }else {
-        $returned["success"] = "false";
-      }
-
-      return $returned;
-
-    }else {
-      return false;
-    }
-
-  }
-
   /* =========== Create Methods =========== */
 
   public function insert_exam() {
@@ -2258,7 +2159,7 @@ class ExamProces {
 
   public function get_compare_table() {
     /*
-      does    : fills "compare table" with [question id, answer id, answer status]
+      does    : fills "compare table" with "Q_id => [question_obj, 0]"
       returns : true | false
     */
 
