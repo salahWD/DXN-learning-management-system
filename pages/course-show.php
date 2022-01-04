@@ -1,5 +1,6 @@
 <?php
 
+# check of  avalibality
 if ($user::USER_TYPE == 3):
   // get course info from session
   $course = $user->get_course_from_session(intval($URL[2]));
@@ -12,7 +13,7 @@ else:
   
 endif;
 
-if (is_object($course) && !empty($course)):
+if (!empty($course) && is_object($course)):
   if ($course->show_status == 2 || $course->show_status == 3):
 
     // get items info

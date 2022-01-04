@@ -623,7 +623,7 @@ class Teacher extends User {
   public function get_own_courses() {
     /*
       returns all courses that teacher have access on it as [
-        [id of course] ==>> permission that he have
+        [id of course] ==>> course_obj {* data}
       ]
     */
 
@@ -647,6 +647,44 @@ class Teacher extends User {
       foreach ($courses_data as $course) {
         $course_obj = new Course();
         $course_obj->set_data($course);
+        $data[$course["id"]] = $course_obj;
+      }
+      
+      return $data;
+    }else {
+      return false;
+    }
+
+  }// array > object course[*]{permission}
+
+  public function get_own_courses_ids() {
+    /*
+      returns all courses that teacher have access on it as [
+        [id of course] ==>> course_obj {permission}
+      ]
+    */
+
+    global $conn;
+
+    $courses_data = $conn->prepare("SELECT permissions.value as permission, courses.id
+        FROM teachers_courses
+        INNER JOIN courses
+        ON courses.id = teachers_courses.course_id
+        INNER JOIN permissions
+        ON permissions.id = teachers_courses.permission_id
+        WHERE teachers_courses.teacher_id = ?");
+    $courses_data->execute([$this->teacher_id]);
+
+    if ($courses_data->rowCount() > 0) {
+      
+      $courses_data = $courses_data->fetchAll(PDO::FETCH_ASSOC);
+
+      $data = [];
+
+      foreach ($courses_data as $course) {
+        $course_obj = new Course();
+        $course_obj->id = $course["id"];
+        $course_obj->permission = $course["permission"];
         $data[$course["id"]] = $course_obj;
       }
       
@@ -1243,7 +1281,7 @@ class Course {
 
     # Delete Lectures
     $stmt = $conn->prepare(
-      "DELETE FROM lectures
+      "DELETE lectures FROM lectures
         INNER JOIN items_order AS item ON item.item_id = lectures.id
       WHERE item.item_type = ? AND item.course_id = ?");
     $result = $stmt->execute([Lecture::TYPE, $this->id]);
@@ -1264,7 +1302,7 @@ class Course {
     }
     # Delete Exams
     $stmt = $conn->prepare(
-      "DELETE FROM exams
+      "DELETE exams FROM exams
         INNER JOIN items_order AS item ON item.item_id = exams.id
       WHERE item.item_type = ? AND item.course_id = ?");
     $result = $stmt->execute([Exam::TYPE, $this->id]);
@@ -1297,6 +1335,8 @@ class Item {
   public $type;
   public $day_before;
   public $errors = [];
+
+  /* ============== Create Methods ============== */
 
   public function item_pass($student_id) {
     /*
@@ -1337,9 +1377,26 @@ class Item {
 
   }
 
+  public function set_data($data) {
+
+    if (isset($data["id"]) && !empty($data["id"])) {
+      $this->id = intval($data["id"]);
+    }
+    if (isset($data["type"]) && !empty($data["type"])) {
+      $this->type = intval($data["type"]);
+    }
+    if (isset($data["order"]) && !empty($data["order"])) {
+      $this->order = intval($data["order"]);
+    }
+    if (isset($data["course_id"]) && !empty($data["course_id"])) {
+      $this->course_id = intval($data["course_id"]);
+    }
+
+  }
+
   /* ============== Retrieve Methods ============== */
 
-  static public function get_item_type_id($course, $order) {
+  public function get_item_type_id($course, $order) {
     /*
       takes   : $order wich is item order && $course wich is course id
       does    : gets item type
@@ -1354,7 +1411,9 @@ class Item {
 
     if ($stmt->rowCount() > 0) {
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
-      return ["id" => $result["item_id"], "type" => $result["item_type"]];
+      $this->id     = $result["item_id"];
+      $this->type   = $result["item_type"];
+      return true;
     }else {
       return false;
     }
@@ -1387,6 +1446,25 @@ class Item {
 
       return false;
 
+    }
+
+  }
+
+  public function get_course_id($item_id, $item_type) {
+    /*
+      takes: item_id
+      gets : course id
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT courses.id FROM items_order WHEN items_order.item_type = ? AND items_order.item_id = ?");
+    $stmt->execute([$item_type, $item_id]);
+
+    if ($stmt->rowCownt() > 0) {
+      return $stmt->fetch(PDO::FETCH_ASSOC)["id"];
+    }else {
+      return false;
     }
 
   }

@@ -172,11 +172,11 @@
                 </a>
               </div> 
               <div class="p-2 d-flex justify-content-around">
-                <?php if($course->permission[2] == 1):?>
+                <?php if($course->check_permission("UPDATE")):?>
                   <a href="<?php echo theURL . language . "/manage-course/" . $course->id?>" class="btn btn-success"><i class="fa fa-edit"></i></a>
                 <?php endif;?>
-                <?php if($course->permission[3] == 1):?>
-                  <a href="<?php echo theURL . language . "/course-delete/";?>" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+                <?php if($course->check_permission("DELETE")):?>
+                  <a href="<?php echo theURL . language . "/course-delete/" . $course->id;?>" class="btn btn-danger"><i class="fa fa-trash"></i></a>
                 <?php endif;?>
                 <a href="<?php echo theURL . language . "/course/" . $course->id;?>" class="btn btn-primary"><i class="fa fa-eye"></i></a>
               </div>
