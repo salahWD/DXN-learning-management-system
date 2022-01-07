@@ -1452,17 +1452,17 @@ class Item {
 
   public function get_course_id($item_id, $item_type) {
     /*
-      takes: item_id
+      takes: item_id, item_type
       gets : course id
     */
 
     global $conn;
 
-    $stmt = $conn->prepare("SELECT courses.id FROM items_order WHEN items_order.item_type = ? AND items_order.item_id = ?");
+    $stmt = $conn->prepare("SELECT course_id FROM items_order WHERE items_order.item_type = ? AND items_order.item_id = ?");
     $stmt->execute([$item_type, $item_id]);
 
-    if ($stmt->rowCownt() > 0) {
-      return $stmt->fetch(PDO::FETCH_ASSOC)["id"];
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_ASSOC)["course_id"];
     }else {
       return false;
     }
@@ -1672,8 +1672,10 @@ class Lecture extends Item {
       $stmt = $conn->prepare("SELECT MAX(items_order.order) + 1 FROM items_order WHERE course_id = ?");
 
       $stmt->execute([$this->course_id]);
-  
-      $this->order = $stmt->fetch(PDO::FETCH_NUM)[0];
+
+      $order = $stmt->fetch(PDO::FETCH_NUM)[0];
+
+      $this->order = is_numeric($order) && $order > 0 ? $order : 1;
 
       $stmt = $conn->prepare(
         "INSERT INTO
@@ -1765,11 +1767,7 @@ class Lecture extends Item {
     
     $result = $order_delete->execute([$this->id, self::TYPE]);
 
-    if ($result) {
-      return true;
-    }else {
-      return false;
-    }
+    return $result;
 
   }// end of delete_lecture method
 
@@ -2144,11 +2142,8 @@ class Exam extends Item {
       WHERE items_order.item_type = ? AND exams.id = ?");
     
     $result = $exam_delete->execute([Exam::TYPE, $this->id]);
-    if ($result) {
-      return true;
-    }else {
-      return false;
-    }
+
+    return $result;
 
   }
 
@@ -2387,6 +2382,8 @@ class Question {
         "INSERT INTO questions (`exam_id`, `question`, `important`, `order`, `multible_option`)
         VALUES (:exam_id, :question, :important, :order, :multible_option)");
 
+      $conn->beginTransaction();
+
       if ($question->execute([
           ":exam_id"          => $this->exam_id,
           ":question"         => $this->question,
@@ -2395,11 +2392,9 @@ class Question {
           ":multible_option"  => $this->multible_option,
       ])) {
 
-        // get id after insert it 
-        $id = $conn->prepare("SELECT LAST_INSERT_ID() AS id FROM questions");
-        $id->execute();
-
-        $this->id = $id->fetch(PDO::FETCH_ASSOC)["id"];
+        $this->id = $conn->lastInsertId();
+        
+        $conn->commit();
 
         $sql = "INSERT INTO answers (`question_id`, `answer`, `is_right`) VALUES";
         $arg = [];
@@ -2417,11 +2412,9 @@ class Question {
 
         $insert = $conn->prepare($sql);
 
-        if ($insert->execute($arg)) {
-          return true;
-        }else {// error inserting answer
-          return false;
-        }
+        $result = $insert->execute($arg);
+
+        return $result;
         
       }else {
         return false;
@@ -2458,6 +2451,7 @@ class Question {
         $answers = $answers->fetchAll(PDO::FETCH_ASSOC);
 
         $question["answers"] = $answers;// add answers to question info
+        
         return $question;
 
       }else {

@@ -4,6 +4,8 @@
   
   if ($user::USER_TYPE == 1) {
     $course->delete_course();
+    header("Location: " . theURL . language . "/manage-course");
+    exit();
   }else {
     $course->permission = $course->get_teacher_permission($user->teacher_id);
     if ($course->check_permission("DELETE")) {

@@ -1,5 +1,5 @@
 <?php
-// resume from =====> delete course => [delete all of it's items specialy exams]
+
 $order        = $URL[3];
 
 $exam         = new Exam();
@@ -9,6 +9,7 @@ $exam->set_data($exam->get_exam($exam->id));
 $course       = new Course();
 $course->id   = $exam->course_id;
 
+# permission check
 if ($user::USER_TYPE == 2):
   $course->permission = $course->get_teacher_permission($user->teacher_id);
   if (!$course->check_permission("UPDATE")):?>
@@ -16,8 +17,8 @@ if ($user::USER_TYPE == 2):
       <div class="row">
         <div class="col">
           <div class="alert alert-danger mt-4">
-            <div class="alert-title">No Access !!</div>
-            <p class="lead">You Have No Access To This course</p>
+            <div class="alert-title">لا تملك الصلاحيات</div>
+            <p class="lead">عذرا يبدو انك لا تملك صلاحيات التعديل</p>
           </div>
         </div>
       </div>
@@ -27,8 +28,6 @@ if ($user::USER_TYPE == 2):
   endif;
 endif;
 
-  // $course->items = $course->get_items_id_name();
-    
 if ($order == "add") {// there is add tag
   
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -40,17 +39,10 @@ if ($order == "add") {// there is add tag
     // Create Array Of Answer Objects
     if (isset($_POST["question"]) && (isset($_POST["answer"]) || isset($_POST["update"]))) {
 
-      $answers = [];
-      foreach($_POST["answer"] as $ans_obj) {
-        $obj = new Answer();
-        $obj->set_data($ans_obj);
-        array_push($answers, $obj);
-      }
-
       $info = [
         "exam_id"         => $exam->id,
         "question"        => $_POST["question"],
-        "answers"         => $answers,
+        "answers"         => $_POST["answer"],
         "multible_option" => $is_multiple,
       ];
     
@@ -70,21 +62,11 @@ if ($order == "add") {// there is add tag
     }
   }
 
-
 }else {// if there is question Order 
 
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
   
-    $question = new Question(); 
     $is_multiple = isset($_POST["is_multiple"]) ? 2: 1;
-    $answers = [];
-    if (isset($_POST["answer"]) && !empty($_POST["answer"]) && count($_POST["answer"]) > 0) {
-      foreach ($_POST["answer"] as $answer) {
-        $obj = new Answer();
-        $obj->set_data($answer);
-        array_push($answers, $obj);
-      }
-    }
     
     $update = [];
     if (isset($_POST["update"]) && !empty($_POST["update"]) && count($_POST["update"]) > 0) {
@@ -103,11 +85,12 @@ if ($order == "add") {// there is add tag
       "exam_id"         => $exam->id,
       "question"        => $_POST["question"],
       "update"          => $update,
-      "answers"         => $answers,
+      "answers"         => $_POST["answer"],
       "order"           => 1,
       "multible_option" => $is_multiple,
     ];
     
+    $question = new Question(); 
     $question->set_data($info);
 
     if (count($question->update) > 0) {
@@ -196,14 +179,14 @@ if ($order == "add") {// there is add tag
             <?php if (isset($quest) && !empty($quest->answers)): ?>
               <?php foreach($quest->answers as $i => $answer):?>
                 <div class="input-group answer mb-3" data-status="update">
-                  <input type="hidden" name="update[<?php echo $i;?>][is_right]" value="<?php echo $answer["is_right"] == 2 ? 2: 1;?>">
-                  <input type="hidden" name="update[<?php echo $i;?>][id]" value="<?php echo $answer["id"];?>">
-                  <input type="text" class="form-control" name="update[<?php echo $i;?>][answer]" placeholder="Answer <?php echo $i;?>" <?php echo "value=\"" . $answer["answer"] . "\"";?>>
-                  <button class="btn <?php if ($answer["is_right"] == 2) {echo "active";}?> check-answer btn-outline-success" type="button"><i class="fa fa-lg fa-check"></i></button>
+                  <input type="hidden" name="update[<?php echo $i;?>][is_right]" value="<?php echo $answer->is_right == 2 ? 2: 1;?>">
+                  <input type="hidden" name="update[<?php echo $i;?>][id]" value="<?php echo $answer->id;?>">
+                  <input type="text" class="form-control" name="update[<?php echo $i;?>][answer]" placeholder="Answer <?php echo $i;?>" <?php echo "value=\"" . $answer->answer . "\"";?>>
+                  <button class="btn <?php if ($answer->is_right == 2) {echo "active";}?> check-answer btn-outline-success" type="button"><i class="fa fa-lg fa-check"></i></button>
                   <button class="btn delete-answer btn-outline-danger" type="button"><i class="fa fa-lg fa-trash"></i></button>
                 </div>
               <?php endforeach;?>
-            <?php else: ?>
+            <?php else:// default tow answers ?>
               <div class="input-group answer mb-3" data-status="add">
                 <input type="hidden" class="d-none" name="answer[1][is_right]" value="1">
                 <input type="text" class="form-control" name="answer[1][answer]" placeholder="Answer 1">
