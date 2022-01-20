@@ -76,7 +76,7 @@
 	<div class="col-md-4">
 		<div class="card text-center">
 			<div class="card-body">
-				<h3 class="card-title">متابعةالمجموعات</h3>
+				<h3 class="card-title">ادارة المجموعات</h3>
 				<hr>
 				<a href="<?php echo theURL . language . "/manage-group";?>" class="btn btn-primary"><i class="fa fa-tasks"></i></a>
 			</div>

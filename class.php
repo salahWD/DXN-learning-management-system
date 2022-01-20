@@ -148,9 +148,47 @@ class User {
 class Group {
   public $id;
   public $name;
+  public $description;
   public $path_id = false;// if no id it stil false
   public $members = [];
   public $teacher_id;
+
+  public function set_data($data) {
+
+    if (isset($data["id"]) && !empty($data["id"])) {
+      $this->id = $data["id"];
+    }
+    if (isset($data["name"]) && !empty($data["name"])) {
+      $this->name = $data["name"];
+    }
+    if (isset($data["path_id"]) && !empty($data["path_id"])) {
+      $this->path_id = $data["path_id"];
+    }
+    if (isset($data["teacher_id"]) && !empty($data["teacher_id"])) {
+      $this->teacher_id = $data["teacher_id"];
+    }
+    if (isset($data["description"]) && !empty($data["description"])) {
+      $this->description = $data["description"];
+    }
+  }// object
+
+  public static function get_group($id) {
+    /*  
+      retuturn: gets all of groups
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT * FROM groups WHERE groups.id = ?");
+    $stmt->execute([$id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group[id]
 
   public static function get_all() {
     /*  
@@ -168,7 +206,7 @@ class Group {
       return false;
     }
 
-  }// array > object group[*]
+  }// array > group[*]
 
   public static function get_all_by_teacher($teacher_id) {
     /*  
@@ -187,7 +225,7 @@ class Group {
       return false;
     }
 
-  }// array > object group[*]{teacher_id}
+  }// array > group[*]{teacher_id}
 
 }
 
@@ -409,7 +447,7 @@ class Student extends User {
     */
     
     global $conn;
-   
+  
     // get student group then path then courses he most complate
     $stmt = $conn->prepare(
       "SELECT courses.id, courses.title, courses.description, courses.date FROM users AS user
@@ -439,7 +477,8 @@ class Student extends User {
         INNER JOIN courses ON courses.id = paths_courses.course_id
         WHERE paths.is_main = 1 AND user.id = ? ORDER BY paths_courses.order
       ");
-      $stmt->execute();
+      
+      $stmt->execute([$this->id]);
       if ($stmt->rowCount() > 0) {
 
         $courses_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -807,6 +846,54 @@ class Admin extends User {
 
 }
 
+// class Group {
+//   public $id;
+//   public $teacher_id;
+//   public $path_id;
+//   public $name;
+//   public $description;
+
+
+//   public function set_data($data) {
+//     if (isset($data["id"]) && !empty($data["id"])) {
+//       $this->id = $data["id"];
+//     }
+//     if (isset($data["name"]) && !empty($data["name"])) {
+//       $this->name = $data["name"];
+//     }
+//     if (isset($data["path_id"]) && !empty($data["path_id"])) {
+//       $this->path_id = $data["path_id"];
+//     }
+//     if (isset($data["teacher_id"]) && !empty($data["teacher_id"])) {
+//       $this->teacher_id = $data["teacher_id"];
+//     }
+//     if (isset($data["description"]) && !empty($data["description"])) {
+//       $this->description = $data["description"];
+//     }
+//   }
+
+//   public function get_group($id) {
+//     /*
+//         takes     : $id     => group id
+//         returns   : $data   => all group data
+//     */
+
+//     global $conn;
+
+//     $stmt = $conn->prepare("SELECT * FROM groups WHERE groups.id = ?");
+//     $stmt->execute([$id]);
+
+//     if ($stmt->rowCount() > 0) {
+//       return $stmt->fetch(PDO::FETCH_ASSOC);
+//     }else {
+//       return false;
+//     }
+
+//   }
+
+
+// }
+
 
 class Course {
   public $id;
@@ -930,11 +1017,14 @@ class Course {
         endif;
       endfor;
 
-    }else {
-      $items[0]->show_status = 2;
-    }
+      return $items;
 
-    return $items;
+    }else {
+
+      $items[0]->show_status = 2;
+
+      return $items;
+    }
 
   }// array > object Lecture | Exam[*](show_status)
 
@@ -1347,32 +1437,19 @@ class Item {
 
     global $conn;
 
-    $max_course_order = $conn->prepare(// items_order.order AS `current_order`
-      "SELECT MAX(items_order.order) AS `max_course_order`FROM items_order
-      WHERE course_id = (SELECT course_id FROM items_order WHERE items_order.item_id = ? AND items_order.item_type = ?)");
-      
-    $result = $max_course_order->execute([$student_id, $this->id, $this->type]);
+    $check = $conn->prepare("SELECT id FROM student_pass WHERE student_id = ? AND item_order_id = (SELECT id FROM items_order WHERE item_id = ? AND item_type = ? AND course_id = ?)");
+    $check->execute([$student_id, $this->id, $this::TYPE, $this->course_id]);
+    
+    if ($check->rowCount() == 0) {
 
-    if ($result) {
-
-      $max_course_order = $max_course_order->fetch(PDO::FETCH_ASSOC)["max_course_order"];
-      $this->order = $max_course_order;
-      // if (the current order == $this->order) {
-        
-        // $blank_recorde_insert_studentPass = $conn->prepare("INSERT INTO student_pass (student_id, item_order_id) VALUES (?, NULL)");
-        // $blank_recorde_insert_studentPass->execute([$student_id]);
-        
-      // }
-
-      // $insert_finish_item = $conn->prepare(
-      //   "INSERT INTO student_pass (student_id, item_order_id) VALUES (?, (SELECT id FROM items_order WHERE item_id = ? AND item_type = ?))");
-      // $result = $insert_finish_item->execute([$student_id, $this->id, $this->type]);
+      $insertation = $conn->prepare(
+        "INSERT INTO student_pass (student_id, item_order_id) VALUES (?, (SELECT id FROM items_order WHERE item_id = ? AND item_type = ? AND course_id = ?))");
+      $result = $insertation->execute([$student_id, $this->id, $this::TYPE, $this->course_id]);
 
       return $result;
-      
 
     }else {
-      return false;
+      return true;
     }
 
   }
@@ -2158,7 +2235,7 @@ class ExamProces {
 
   /* =========== Process Methods =========== */
 
-  public function coompare_answers($student_answers) {
+  public function compare_answers($student_answers) {
     /*
       takes   : student answers and compare it with compare_table answers
       does    : fills "compare table" with [student answer]
@@ -2187,14 +2264,9 @@ class ExamProces {
             if ($answer["is_right"] == 2) {// 2 = answer is right
 
               if ($answer["id"] == $student_answers[$question[0]->id]) {
-                $question[1] = intval($question[1]) + $grade_part;
+                $question[1] = 100;
               }
 
-            }else {
-
-              if ($answer["id"] != $student_answers[$question[0]->id]) {
-                $question[1] = intval($question[1]) + $grade_part;
-              }
             }
           }
           
@@ -2220,7 +2292,7 @@ class ExamProces {
   public function some_markes() {
     $full_marke = 0;
     
-    foreach ($this->compare_table as $index => $question):
+    foreach ($this->compare_table as $question):
 
         $full_marke += (100 / count($this->compare_table)) * ($question[1] / 100);
       

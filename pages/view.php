@@ -8,7 +8,8 @@ if ($item->get_item_type_id($course_id, $item_order)) {
   if ($item->type == 1):
   
     $lecture = new Lecture();
-    $lecture->set_data($lecture->get_lecture($course_id, $item_order));
+    $lecture->id = $item->id;
+    $lecture->set_data($lecture->get_lecture());
   
     ?>
     <div class="container">
@@ -24,8 +25,8 @@ if ($item->get_item_type_id($course_id, $item_order)) {
         <div class="col-md-2"></div>
       </div>
       <div class="d-flex justify-content-around mt-2 pb-3">
-        <button class="btn btn-primary" type="button">Next</button>
-        <button class="btn btn-primary" type="button">Prev</button>
+        <a class="btn btn-primary disabled" id="next-btn" type="button">Next</a>
+        <button class="btn btn-primary" id="prev-btn" type="button">Prev</button>
       </div>
     </div>
     <?php
@@ -37,10 +38,10 @@ if ($item->get_item_type_id($course_id, $item_order)) {
     $exam->get_questions();
   
     // set exam info in session to push it to exam_proces to presec it
-    unset($_SESSION["exam_result"]);
-    $_SESSION["exam_result"]["course_id"]  = $course_id;
-    $_SESSION["exam_result"]["exam_id"]    = $exam->id;
-    $_SESSION["exam_result"]["exam_title"] = $exam->title;
+    unset($_SESSION["exam"]);
+    $_SESSION["course_id"]  = $course_id;
+    $_SESSION["exam"]["exam_info"]["exam_id"]    = $exam->id;
+    $_SESSION["exam"]["exam_info"]["exam_title"] = $exam->title;
   ?>
 
     <div class="container">

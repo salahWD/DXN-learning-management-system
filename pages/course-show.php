@@ -1,6 +1,9 @@
 <?php
 
-# check of  avalibality
+unset($_SESSION["exam"]);
+$_SESSION["course_id"] = $URL[2];
+
+# check of permission
 if ($user::USER_TYPE == 3):
   // get course info from session
   $course = $user->get_course_from_session(intval($URL[2]));

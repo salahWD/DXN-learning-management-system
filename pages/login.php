@@ -2,7 +2,7 @@
 
 if (isset($_SESSION['user'])):
 
-  header("Location: " . theURL . language . '/dashboard-student ');// redirect
+  header("Location: " . theURL . language . '/dashboard-' . get_class($user));// redirect
   exit();
 
 else:

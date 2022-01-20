@@ -113,7 +113,23 @@ if (answerContainer) {
 
   //    delete answer
   function deleteAnswer(element) {
-    if (answerContainer.querySelectorAll(`.answer`).length - 2 != 0) {
+    if (answerContainer.querySelectorAll(`.answer`).length > 2) {
+
+      let xhr = new XMLHttpRequest();
+      xhr.addEventListener("readystatechange", () => {
+        if (xhr.readyState == 4) {
+          console.log(xhr.response);
+        }
+      });
+      
+      let data = new FormData();
+      
+      data.append("answear", element.parentElement.querySelector(`inpur[type="hidden"], [name*="id"]`).value);
+      
+      xhr.open("POST", "http://localhost/dxnln/ar/exam-done");
+      
+      xhr.send(data);
+      
       element.parentElement.remove();
       // update inputs value
       answerContainer.querySelectorAll(`.answer[data-status="add"]`).forEach((inp, index) => {

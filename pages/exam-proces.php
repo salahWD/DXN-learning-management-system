@@ -6,15 +6,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
       /* Proces Answers */
       $exam = new ExamProces();
-      $exam->id = intval($_SESSION["exam_result"]["exam_id"]);
+      $exam->id = intval($_SESSION["exam"]["exam_info"]["exam_id"]);
       $exam->min_mark = $exam->get_min_mark();
       $exam->get_compare_table();
 
-      $exam->coompare_answers($_POST["questions"]);
+      $exam->compare_answers($_POST["questions"]);
+
       
-      $_SESSION["exam_result"]["exam_full_mark"]    = $exam->some_markes();
-      $_SESSION["exam_result"]["questions_marks"]   = $exam->compare_table;
-      $_SESSION["exam_result"]["exam_min_mark"]     = intval($exam->min_mark);
+      $full_mark = $exam->some_markes();
+
+      $_SESSION["exam"]["exam_result"]["exam_full_mark"]    = $full_mark;
+      $_SESSION["exam"]["exam_result"]["questions_marks"]   = $exam->compare_table;
+      $_SESSION["exam"]["exam_result"]["exam_min_mark"]     = intval($exam->min_mark);
+
+
+      if ($user::USER_TYPE == 3) {
+        if ($full_mark >= $exam->min_mark) {
+          $exam = new Exam();
+          $exam->id = intval($_SESSION["exam"]["exam_info"]["exam_id"]);
+          $exam->course_id = intval($_SESSION["course_id"]);
+          $exam->item_pass($user->student_id);
+        }
+      }
       
       header("Location: " . theURL . language . "/exam-result");
       exit();

@@ -163,7 +163,17 @@ input:focus {
 .result .list-group .list-grou-item > div {
   width: 100%;
 }
-
+.questions-container {
+  position: relative;
+  overflow: hidden;
+  padding-top: 36px !important;
+}
+.questions-container > .grade {
+  left: 50%;
+  transform: translateX(-50%);
+  padding-left: 24px;
+  padding-right: 24px;
+}
 .grade {
   top: -7px;
   left: 20px;
@@ -287,6 +297,85 @@ input:focus {
 }
 
 /* End Show Items */
+
+/* Start Group Manage */
+
+.group-container {
+  border-radius: 15px;
+  position: relative;
+  box-shadow: 4px 4px 10px 1px #4f4f4f;
+}
+.group-container::before, .group-container::after {
+  content: "";
+  position: absolute;
+  border-radius: 15px;
+}
+.group-container::before {
+  top: -4px;
+  left: -4px;
+  z-index: 1;
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  background: linear-gradient(140deg, #0dc1f4, #125cb1 90%);
+}
+
+.group-container::after {
+  z-index: 0;
+  top: -10px;
+  left: -10px;
+  background: white;
+  width: calc(100% + 20px);/* this plus value is duble of the weight of the border */
+  height: calc(100% + 20px);/* like the firest one */
+}
+
+.group-container .card {
+  z-index: 2;
+  padding: 1.8rem 0.6rem 0.6rem;
+  overflow: hidden;
+  border-radius: 15px;
+}
+
+.group-container .group-title {
+  --border-radius: 40%;
+  position: absolute;
+  margin: 0;
+  left: 50%;
+  top: -25px;
+  z-index: 10;
+  padding: 12px;
+  color: white;
+  min-width: 50%;
+  font-weight: bold;
+  text-align: center;
+  transform: translateX(-50%);
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  background: linear-gradient(120deg, #0dc1f4, #125cb1 90%);
+}
+
+.group-container .group-title::before, .group-container .group-title::after {
+  top: 0;
+  content: "";
+  left: -8px;
+  width: 8px;
+  height: 15px;
+  position: absolute;
+  border-top-left-radius: 100%;
+  background: linear-gradient(-60deg, #0dc1f4 30%, #0f4f99)
+}
+
+.group-container .group-title::after {
+  right: -8px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 100%;
+  background: linear-gradient(-54deg, #0dc1f4, #0f4f99 70%)
+}
+
+.group-container .card .card-body, .group-container .card .list-group li {
+  padding: 0.5rem;
+}
+
+/* End Group Manage */
 
 /* Custom Library */
 
