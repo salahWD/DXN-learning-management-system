@@ -13,7 +13,7 @@ if (count($groups) > 0):?>
         <h2 class="d-inline under-line-title">ادارة المجموعات</h2>
         <a style="float: right" href="<?php echo theURL . language . "/groups-add";?>" class="btn btn-primary"><i class="fa fa-plus" aria-hidden="true"></i></a>
       </div>
-      <div class="row">
+      <div class="row mt-5 pt-3">
         <?php foreach($groups as $group_data):
             $group = new Group();
             $group->set_data($group_data);

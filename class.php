@@ -696,7 +696,7 @@ class Teacher extends User {
 
   }// array > object course[*]{permission}
 
-  public function get_own_courses_ids() {
+  public function get_own_courses_id() {
     /*
       returns all courses that teacher have access on it as [
         [id of course] ==>> course_obj {permission}
@@ -724,6 +724,43 @@ class Teacher extends User {
         $course_obj = new Course();
         $course_obj->id = $course["id"];
         $course_obj->permission = $course["permission"];
+        $data[$course["id"]] = $course_obj;
+      }
+      
+      return $data;
+    }else {
+      return false;
+    }
+
+  }// array > object courses[*]{permission}
+
+  public function get_own_courses_id_name() {
+    /*
+      returns all courses that teacher have access on it as [
+        [id of course] ==>> course_obj {permission, name}
+      ]
+    */
+
+    global $conn;
+
+    $courses_data = $conn->prepare("SELECT permissions.value as permission, courses.id, courses.title
+        FROM teachers_courses
+        INNER JOIN courses
+        ON courses.id = teachers_courses.course_id
+        INNER JOIN permissions
+        ON permissions.id = teachers_courses.permission_id
+        WHERE teachers_courses.teacher_id = ?");
+    $courses_data->execute([$this->teacher_id]);
+
+    if ($courses_data->rowCount() > 0) {
+      
+      $courses_data = $courses_data->fetchAll(PDO::FETCH_ASSOC);
+
+      $data = [];
+
+      foreach ($courses_data as $course) {
+        $course_obj = new Course();
+        $course_obj->set_data($course);
         $data[$course["id"]] = $course_obj;
       }
       
@@ -2196,8 +2233,6 @@ class Exam extends Item {
     */
 
     global $conn;
-
-    $this->set_data($this->get_id());
 
     $update_order = $conn->prepare(
       "UPDATE items_order

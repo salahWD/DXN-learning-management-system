@@ -1,0 +1,11 @@
+import os
+
+path = "D:\localhost\htdocs\dxnln\images\Icons"
+os.chdir(path)
+index = 0
+
+for file in os.listdir():
+  index += index + 1
+  os.rename(f"{path}/{file}", f"{path}/{index}.png")
+  print(f"{path}/{file}", end="   |||   ")
+  print(f"{path}/{index}.png")

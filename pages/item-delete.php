@@ -24,8 +24,10 @@
       $lecture->id = $id;
       $lecture->delete_lecture();
     }
+
     header("Location: " . theURL . language . "/manage-course");
     exit(); 
+    
   }else {?>
     <div class="container">
       <div class="alert alert-danger mt-4 text-center">

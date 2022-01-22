@@ -26,7 +26,10 @@
   }?>
 
 <div class="container">
-  <div class="col-md-8 offset-2 mt-md-5">
+  <div class="text-center mt-4 mb-4 pb-4">
+    <h2 class="under-line-title d-inline">انشاء دورة</h2>
+  </div>
+  <div class="col-md-8 offset-2 mt-md-4">
     <form action="<?php echo theURL . language . '/course-add';?>" method="POST" enctype="multipart/form-data">
       
       <!-- Title input -->

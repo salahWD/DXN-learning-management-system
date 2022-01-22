@@ -1,25 +1,38 @@
 <?php
     
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-      
-      $exam_data = [// all form data
-        "course_id"     => $URL[2],
-        "title"         => $_POST["title"],
-        "percent"       => $_POST["percent"],
-        "description"   => $_POST["description"],
-      ];
-  
-      $exam = new Exam();
-      $exam->set_data($exam_data);
+      if (isset($user->accessible_courses[$_POST["course"]]) || isset($user->accessible_courses[$URL[2]])) {
+        
+        $exam_data = [// all form data
+          "title"         => $_POST["title"],
+          "percent"       => $_POST["percent"],
+          "description"   => $_POST["description"],
+        ];
 
-      if ($exam->insert_exam()) {
-        header("Location: " . theURL . language . "/manage-course/" . $exam->course_id);
-        exit();
+        if (isset($URL[2]) && !empty($URL[2])) {
+          $exam_data["course_id"] = $URL[2];
+        }elseif (isset($_POST["course"]) && !empty($_POST["course"])) {
+          $exam_data["course_id"] = intval($_POST["course"]);
+        }else {
+          echo "course_id is not identifyed.";
+          exit();
+        }
+
+        $exam = new Exam();
+        $exam->set_data($exam_data);
+
+        if ($exam->insert_exam()) {
+          header("Location: " . theURL . language . "/manage-course/" . $exam->course_id);
+          exit();
+        }else {
+          echo "Error: No Insert Exam";
+          exit();
+        }
+        
       }else {
-        echo "Error: No Insert Exam";
+        echo "Have No Access To This Course.";
         exit();
       }
-
       
     }// end "if method == post" check
   
@@ -29,7 +42,7 @@
   <div class="row">
     <div class="col-md-2"></div>
     <div class="col-md-8 mt-md-5">
-      <form action="<?php echo theURL . language . '/exam-add/' . $URL[2];?>" method="POST" enctype="multipart/form-data">
+      <form action="<?php //echo theURL . language . '/exam-add/' . $_SESSION;?>" method="POST" enctype="multipart/form-data">
         
         <!-- Title input -->
         <div class="form-outline mb-4">
@@ -51,6 +64,18 @@
           <label class="form-label" for="Percent">Percent</label>
           <input type="number" id="Percent" placeholder="Success Percent" name="percent" class="form-control" />
         </div>
+
+        <?php if (!isset($URL[2]) || empty($URL[2]) || !is_numeric($URL[2])):?>
+          <!-- Course Select input -->
+          <div class="form-outline mb-4">
+            <label class="form-label" for="Course">Course</label>
+            <select id="Course" name="course" class="form-control">
+              <?php foreach($user->accessible_courses as $course):?>
+                <option value="<?php echo $course->id;?>"><?php echo $course->title;?></option>
+              <?php endforeach;?>
+            </select>
+          </div>
+        <?php endif;?>
       
         <!-- Submit button -->
         <button type="submit" class="btn btn-primary mb-4">Create</button>

@@ -9,7 +9,7 @@
       $course->id = $course_id;
       $course->set_data($course->get_course());
     }else {
-      $user->accessible_courses = $user->get_own_courses();
+      $user->accessible_courses = $user->get_own_courses_id_name();
       $course = isset($user->accessible_courses[$course_id]) ? $user->accessible_courses[$course_id] : NULL;
     }
     
@@ -19,7 +19,7 @@
       <div class="container">
         <div class="alert alert-danger text-center mt-3">
           <h3 class="title">هذة الدورة غير متوفرة</h3>
-          <p>عذرا لكن يبدو ان هذه الدورة غير متوفرة</p>
+          <p>عذرا لكن يبدو ان هذه الدورة غير متوفرة او لا تملك صلاحية الوصول لها</p>
         </div>
       </div>
       <?php
@@ -153,7 +153,7 @@
     if ($user::USER_TYPE == 1) {
       $user->accessible_courses = course::get_courses_all();
     }else {
-      $user->accessible_courses = $user->get_own_courses();
+      $user->accessible_courses = $user->get_own_courses_id_name();
     }
     if (isset($user->accessible_courses) && !empty($user->accessible_courses) && count($user->accessible_courses) > 0) {?>
       <div class="container pt-4">
