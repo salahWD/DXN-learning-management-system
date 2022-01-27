@@ -52,12 +52,12 @@ if (!empty($course) && is_object($course)):
                   <?php echo $item->title;?>
                 </div>
                 <?php if ($item->show_status == 1):?>
-                  <img src="<?php echo ($item::TYPE == 1) ? theURL . imagesURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
+                  <img src="<?php echo ($item::TYPE == 1) ? theURL . thumbURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
                     alt="lecture thumbnail"
                     class="card-img-top">
                 <?php else:?>
                   <a href="<?php echo theURL . language . "/view/" . $course->id . "/" . $item->order?>">
-                    <img src="<?php echo ($item::TYPE == 1) ? theURL . imagesURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
+                    <img src="<?php echo ($item::TYPE == 1) ? theURL . thumbURL . $item->thumbnail : theURL . imageURL . "exam-default.jpg";?>"
                         alt="lecture thumbnail"
                         class="card-img-top">
                   </a>

@@ -9,5 +9,5 @@ define("hostip", "127.0.0.1");
 define("imageURL", "/images/");
 define("assets", "/assets/");
 define("lecturesURL", assets . "videos/");
-define("imagesURL", assets . "images/");
+define("thumbURL", assets . "images/");
 ?>

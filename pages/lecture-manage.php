@@ -52,7 +52,7 @@
   <div class="row">
     <div class="grid-2 p-2 mt-4">
       <div class="image-container">
-        <img class="img-fluid w-100" src="<?php echo theURL . imagesURL . $lecture->thumbnail;?>">
+        <img class="img-fluid w-100" src="<?php echo theURL . thumbURL . $lecture->thumbnail;?>">
         <button name="thumbnail" id="thumbnail-btn" class="btn btn-success image-edit-btn">
           <i class="fa fa-fw fa-edit"></i>
         </button>

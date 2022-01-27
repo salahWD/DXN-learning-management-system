@@ -145,91 +145,6 @@ class User {
 }
 
 
-class Group {
-  public $id;
-  public $name;
-  public $description;
-  public $path_id = false;// if no id it stil false
-  public $members = [];
-  public $teacher_id;
-
-  public function set_data($data) {
-
-    if (isset($data["id"]) && !empty($data["id"])) {
-      $this->id = $data["id"];
-    }
-    if (isset($data["name"]) && !empty($data["name"])) {
-      $this->name = $data["name"];
-    }
-    if (isset($data["path_id"]) && !empty($data["path_id"])) {
-      $this->path_id = $data["path_id"];
-    }
-    if (isset($data["teacher_id"]) && !empty($data["teacher_id"])) {
-      $this->teacher_id = $data["teacher_id"];
-    }
-    if (isset($data["description"]) && !empty($data["description"])) {
-      $this->description = $data["description"];
-    }
-  }// object
-
-  public static function get_group($id) {
-    /*  
-      retuturn: gets all of groups
-    */
-
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT * FROM groups WHERE groups.id = ?");
-    $stmt->execute([$id]);
-
-    if ($stmt->rowCount() > 0) {
-      return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }else {
-      return false;
-    }
-
-  }// array > group[id]
-
-  public static function get_all() {
-    /*  
-      retuturn: gets all of groups
-    */
-
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT * FROM groups");
-    $stmt->execute();
-
-    if ($stmt->rowCount() > 0) {
-      return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }else {
-      return false;
-    }
-
-  }// array > group[*]
-
-  public static function get_all_by_teacher($teacher_id) {
-    /*  
-      takes   : teacher id
-      retuturn: gets all of teacher's groups
-    */
-
-    global $conn;
-
-    $stmt = $conn->prepare("SELECT * FROM groups WHERE groups.teacher_id = ?");
-    $stmt->execute([$teacher_id]);
-
-    if ($stmt->rowCount() > 0) {
-      return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }else {
-      return false;
-    }
-
-  }// array > group[*]{teacher_id}
-
-}
-
-
 class Student extends User {
   public $student_id;
   public $main_courses;
@@ -443,20 +358,20 @@ class Student extends User {
 
   public function get_courses_path() {
     /*
-      return: courses path
+      return: "user's path" courses | the courses of the user's path
     */
     
     global $conn;
   
     // get student group then path then courses he most complate
     $stmt = $conn->prepare(
-      "SELECT courses.id, courses.title, courses.description, courses.date FROM users AS user
+      "SELECT c.id, c.title, c.description, c.date FROM users AS user
       INNER JOIN students ON students.user_id = user.id
       INNER JOIN students_groups ON students_groups.student_id = students.id
       INNER JOIN groups ON groups.id = students_groups.group_id
       INNER JOIN paths ON paths.id = groups.path_id
       INNER JOIN paths_courses ON paths_courses.path_id = paths.id
-      INNER JOIN courses ON courses.id = paths_courses.course_id
+      INNER JOIN courses c ON c.id = paths_courses.course_id
       WHERE user.id = ? ORDER BY paths_courses.order");
 
     $stmt->execute([$this->id]);
@@ -732,7 +647,7 @@ class Teacher extends User {
       return false;
     }
 
-  }// array > object courses[*]{permission}
+  }// array > object courses[*](id, permission){permission}
 
   public function get_own_courses_id_name() {
     /*
@@ -769,7 +684,43 @@ class Teacher extends User {
       return false;
     }
 
-  }// array > object course[*]{permission}
+  }// array > object courses[*](id, name, permission){permission}
+
+  public function get_paths() {
+    /*
+      returns all teacher's paths
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT * FROM paths P WHERE P.teacher_id = ?");
+    $stmt->execute([$this->teacher_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }
+
+  public function get_paths_id() {
+    /*
+      returns all teacher's path's ids
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT P.id FROM paths P WHERE P.teacher_id = ?");
+    $stmt->execute([$this->teacher_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }
 
 }
 
@@ -883,53 +834,226 @@ class Admin extends User {
 
 }
 
-// class Group {
-//   public $id;
-//   public $teacher_id;
-//   public $path_id;
-//   public $name;
-//   public $description;
 
+class Group {
+  public $id;
+  public $name;
+  public $description;
+  public $path_id = false;// if no path_id it stil false
+  public $icon_id;// icon id
+  public $icon;// icon name
+  public $members = [];
+  public $teacher_id;
 
-//   public function set_data($data) {
-//     if (isset($data["id"]) && !empty($data["id"])) {
-//       $this->id = $data["id"];
-//     }
-//     if (isset($data["name"]) && !empty($data["name"])) {
-//       $this->name = $data["name"];
-//     }
-//     if (isset($data["path_id"]) && !empty($data["path_id"])) {
-//       $this->path_id = $data["path_id"];
-//     }
-//     if (isset($data["teacher_id"]) && !empty($data["teacher_id"])) {
-//       $this->teacher_id = $data["teacher_id"];
-//     }
-//     if (isset($data["description"]) && !empty($data["description"])) {
-//       $this->description = $data["description"];
-//     }
-//   }
+  /*=========== Create Methods ===========*/
 
-//   public function get_group($id) {
-//     /*
-//         takes     : $id     => group id
-//         returns   : $data   => all group data
-//     */
+  public function add_group() {
+    /*
+      uses  : teacher_id, name, description, icon_id
+      return : True | False
+    */
 
-//     global $conn;
+    global $conn;
 
-//     $stmt = $conn->prepare("SELECT * FROM groups WHERE groups.id = ?");
-//     $stmt->execute([$id]);
+    if (!empty($this->path_id) && is_numeric($this->path_id)) {
+      $sql = "INSERT INTO groups (`name`, `description`, teacher_id, icon, path_id) VALUES ( ?, ?, ?, ?, ?)";
+      $exec = [$this->name, $this->description, $this->teacher_id, $this->icon, $this->path_id];
 
-//     if ($stmt->rowCount() > 0) {
-//       return $stmt->fetch(PDO::FETCH_ASSOC);
-//     }else {
-//       return false;
-//     }
+    }else {
+      $sql = "INSERT INTO groups (`name`, `description`, teacher_id, icon) VALUES ( ?, ?, ?, ?)";
+      $exec = [$this->name, $this->description, $this->teacher_id, $this->icon];
 
-//   }
+    }
 
+    $stmt = $conn->prepare($sql);
+    $result = $stmt->execute($exec);
 
-// }
+    return $result;
+
+  }
+
+  /*=========== Retrieve Methods ===========*/
+
+  public function set_data($data) {
+
+    if (isset($data["id"]) && !empty($data["id"])) {
+      $this->id = $data["id"];
+    }
+    if (isset($data["name"]) && !empty($data["name"])) {
+      $this->name = $data["name"];
+    }
+    if (isset($data["path_id"]) && !empty($data["path_id"])) {
+      $this->path_id = $data["path_id"];
+    }
+    if (isset($data["icon_id"]) && !empty($data["icon_id"])) {
+      $this->icon_id = $data["icon_id"];
+    }
+    if (isset($data["icon"]) && !empty($data["icon"])) {
+      $this->icon = $data["icon"];
+    }
+    if (isset($data["teacher_id"]) && !empty($data["teacher_id"])) {
+      $this->teacher_id = $data["teacher_id"];
+    }
+    if (isset($data["description"]) && !empty($data["description"])) {
+      $this->description = $data["description"];
+    }
+  }// object
+
+  public static function get_group($id) {
+    /*  
+      retuturn: gets all of groups
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT g.*, i.id, i.icon FROM groups g
+      INNER JOIN icons i ON g.icon = i.id
+      WHERE g.id = ?");
+    $stmt->execute([$id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group[id]
+
+  public static function get_all() {
+    /*  
+      retuturn: gets all of groups
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("SELECT * FROM groups");
+    $stmt->execute();
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group[*]
+
+  public static function get_all_by_teacher($teacher_id) {
+    /*  
+      takes   : teacher id
+      retuturn: gets all of teacher's groups
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT g.*, i.id AS icon_id, i.icon AS icon FROM groups g
+      INNER JOIN icons i ON g.icon = i.id
+      WHERE g.teacher_id = ?");
+    $stmt->execute([$teacher_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group[*]{teacher_id}
+
+  public static function get_id_by_teacher($teacher_id) {
+    /*  
+      takes   : teacher id
+      retuturn: gets all of teacher's group's ids
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT g.id FROM groups g WHERE g.teacher_id = ?");
+    $stmt->execute([$teacher_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group[*]{teacher_id}
+
+  public function get_members() {
+    /*
+      return : all members of this group
+      takes : group id
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT U.fullname, U.dxnid, S.id AS student_id FROM groups G
+      INNER JOIN students_groups SG ON SG.group_id = G.id
+      INNER JOIN students S ON S.id = SG.student_id
+      INNER JOIN users U ON U.id = S.user_id
+      WHERE G.id = ?");
+
+    $stmt->execute([$this->id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group's members
+
+  public function get_path_courses() {
+    /*
+      return : path's courses for group
+      takes : group id
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT C.id, C.title, C.description FROM groups G
+      INNER JOIN paths P ON P.id = G.path_id
+      INNER JOIN paths_courses PC ON PC.path_id = P.id
+      INNER JOIN courses C ON C.id = PC.course_id
+      WHERE G.id = ?");
+
+    $stmt->execute([$this->id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group's members
+
+  /*=========== Update Methods ===========*/
+
+  public function update_group() {
+    /*
+      takes : "group data" you will update
+      return : true | false
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare("UPDATE groups G SET `name` = ?, `description` = ?, icon = ?, path_id = ? WHERE G.id = ?");
+    $result = $stmt->execute([
+      $this->name,
+      $this->description,
+      $this->icon_id,
+      $this->path_id,
+      $this->id,
+    ]);
+    
+    return $result;
+
+  }// Boolian
+
+}
 
 
 class Course {
@@ -1770,7 +1894,7 @@ class Lecture extends Item {
       
       $result1 = move_uploaded_file($this->video->tmp_name, $_SERVER["DOCUMENT_ROOT"] . '/dxnln' . lecturesURL . $tmp_name_one);
       
-      $result2 = move_uploaded_file($this->thumbnail->tmp_name, $_SERVER["DOCUMENT_ROOT"] . '/dxnln' . imagesURL . $tmp_name_tow);
+      $result2 = move_uploaded_file($this->thumbnail->tmp_name, $_SERVER["DOCUMENT_ROOT"] . '/dxnln' . thumbURL . $tmp_name_tow);
 
       // Lectures Table Insert
       $stmt = $conn->prepare(

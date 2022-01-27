@@ -78,7 +78,7 @@
 			<div class="card-body">
 				<h3 class="card-title">ادارة المجموعات</h3>
 				<hr>
-				<a href="<?php echo theURL . language . "/manage-group";?>" class="btn btn-primary"><i class="fa fa-tasks"></i></a>
+				<a href="<?php echo theURL . language . "/manage-groups";?>" class="btn btn-primary"><i class="fa fa-tasks"></i></a>
 			</div>
 		</div>
 	</div>
