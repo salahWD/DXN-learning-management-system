@@ -181,7 +181,7 @@ class Student extends User {
 
   }// boolian
 
-  public function set_student($info) {
+  public function set_data($info) {
     /*
     ====== sets members to the object
     */
@@ -245,6 +245,20 @@ class Student extends User {
     }
     
   }
+
+  public static function student_obj($students_data) {
+    if (is_array($students_data) && count($students_data) > 0) {
+      $stu_objs = [];
+      foreach($students_data as $student_data):
+        $student = new Student();
+        $student->set_data($student_data);
+        array_push($stu_objs, $student);
+      endforeach;
+      return $stu_objs;
+    }else {
+      return [];
+    }
+  }
   
   /*=========== Retrieve Methods ===========*/
   
@@ -266,7 +280,7 @@ class Student extends User {
 
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
       
-      $this->set_student($result);
+      $this->set_data($result);
 
       return true;
 
@@ -840,9 +854,11 @@ class Group {
   public $name;
   public $description;
   public $path_id = false;// if no path_id it stil false
+  public $path = [];// shold contain courses_objs
   public $icon_id;// icon id
   public $icon;// icon name
   public $members = [];
+  public $members_count;
   public $teacher_id;
 
   /*=========== Create Methods ===========*/
@@ -855,13 +871,13 @@ class Group {
 
     global $conn;
 
-    if (!empty($this->path_id) && is_numeric($this->path_id)) {
+    if (!empty($this->path_id) && is_numeric(intval($this->path_id))) {
       $sql = "INSERT INTO groups (`name`, `description`, teacher_id, icon, path_id) VALUES ( ?, ?, ?, ?, ?)";
-      $exec = [$this->name, $this->description, $this->teacher_id, $this->icon, $this->path_id];
+      $exec = [$this->name, $this->description, $this->teacher_id, $this->icon_id, $this->path_id];
 
     }else {
       $sql = "INSERT INTO groups (`name`, `description`, teacher_id, icon) VALUES ( ?, ?, ?, ?)";
-      $exec = [$this->name, $this->description, $this->teacher_id, $this->icon];
+      $exec = [$this->name, $this->description, $this->teacher_id, $this->icon_id];
 
     }
 
@@ -869,6 +885,25 @@ class Group {
     $result = $stmt->execute($exec);
 
     return $result;
+
+  }
+
+  public static function group_obj($groups_data) {
+    /*
+      return : group objects
+    */
+
+    if (is_array($groups_data) && count($groups_data) > 0):
+      $groups = [];
+      foreach($groups_data as $group_data):
+        $group = new Group();
+        $group->set_data($group_data);
+        array_push($groups, $group);
+      endforeach;
+      return $groups;
+    else:
+      return [];
+    endif;
 
   }
 
@@ -893,6 +928,9 @@ class Group {
     }
     if (isset($data["teacher_id"]) && !empty($data["teacher_id"])) {
       $this->teacher_id = $data["teacher_id"];
+    }
+    if (isset($data["members_count"]) && !empty($data["members_count"])) {
+      $this->members_count = $data["members_count"];
     }
     if (isset($data["description"]) && !empty($data["description"])) {
       $this->description = $data["description"];
@@ -939,17 +977,15 @@ class Group {
   }// array > group[*]
 
   public static function get_all_by_teacher($teacher_id) {
-    /*  
-      takes   : teacher id
-      retuturn: gets all of teacher's groups
-    */
+    /* retuturn: gets all of teacher's groups */
 
     global $conn;
 
     $stmt = $conn->prepare(
-      "SELECT g.*, i.id AS icon_id, i.icon AS icon FROM groups g
-      INNER JOIN icons i ON g.icon = i.id
-      WHERE g.teacher_id = ?");
+      "SELECT G.*, I.id AS icon_id, I.icon AS icon
+      FROM groups G
+      INNER JOIN icons I ON G.icon = I.id
+      WHERE G.teacher_id = ?");
     $stmt->execute([$teacher_id]);
 
     if ($stmt->rowCount() > 0) {
@@ -980,7 +1016,7 @@ class Group {
 
   }// array > group[*]{teacher_id}
 
-  public function get_members() {
+  public static function get_members($group_id) {
     /*
       return : all members of this group
       takes : group id
@@ -995,7 +1031,7 @@ class Group {
       INNER JOIN users U ON U.id = S.user_id
       WHERE G.id = ?");
 
-    $stmt->execute([$this->id]);
+    $stmt->execute([$group_id]);
 
     if ($stmt->rowCount() > 0) {
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1005,7 +1041,27 @@ class Group {
 
   }// array > group's members
 
-  public function get_path_courses() {
+  public static function get_members_count($group_id) {
+    /* return : count of all members in group */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT COUNT(SG.id) AS members_count FROM students_groups SG
+      INNER JOIN groups G ON G.id = SG.group_id
+      WHERE G.id = ?");
+
+    $stmt->execute([$group_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_ASSOC)["members_count"];
+    }else {
+      return false;
+    }
+
+  }// int
+
+  public static function get_path_courses($group_id) {
     /*
       return : path's courses for group
       takes : group id
@@ -1020,7 +1076,7 @@ class Group {
       INNER JOIN courses C ON C.id = PC.course_id
       WHERE G.id = ?");
 
-    $stmt->execute([$this->id]);
+    $stmt->execute([$group_id]);
 
     if ($stmt->rowCount() > 0) {
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1029,6 +1085,26 @@ class Group {
     }
 
   }// array > group's members
+
+  public static function get_icons() {
+    /*
+      return : gets all icons
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT * FROM icons");
+
+    $stmt->execute();
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > icons
 
   /*=========== Update Methods ===========*/
 
@@ -1049,6 +1125,20 @@ class Group {
       $this->id,
     ]);
     
+    return $result;
+
+  }// Boolian
+
+  /*=========== Delete Methods ===========*/
+
+  public static function delete_group($group_id) {
+    /* delete groupo from DB */
+
+    global $conn;
+
+    $stmt = $conn->prepare("DELETE FROM `groups` WHERE `groups`.id = ?");
+    $result = $stmt->execute([$group_id]);
+
     return $result;
 
   }// Boolian
@@ -1265,6 +1355,20 @@ class Course {
       }
     }
   }// insert into courses table
+
+  public static function course_obj($courses_data) {
+    if (is_array($courses_data) && count($courses_data) > 0) {
+      $cur_objs = [];
+      foreach($courses_data as $course_data):
+        $course = new Course();
+        $course->set_data($course_data);
+        array_push($cur_objs, $course);
+      endforeach;
+      return $cur_objs;
+    }else {
+      return [];
+    }
+  }// create objects from arrays
 
   /*=========== Retrieve Methods ===========*/
 

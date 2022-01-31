@@ -18,7 +18,7 @@
           }
         }else {
           $student = new Student();
-          $student->set_student($_POST["register_form"]);
+          $student->set_data($_POST["register_form"]);
           
           if ($student->create_student()) {
             $user_type = ($_SESSION["user"]::USER_TYPE == 1) ? "admin" : "teacher";

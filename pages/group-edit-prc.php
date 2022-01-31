@@ -2,16 +2,13 @@
 
   if ($_SERVER["REQUEST_METHOD"] == "POST"):
 
+    
+    $group_id = intval($URL[2]);
+    
     $permission = false;// triger for permission
 
-    $group_id = intval($URL[2]);
-
-    $group = new Group();
-    $group->id = $group_id;
-
     if ($user::USER_TYPE == 2):
-      $groups = $group->get_id_by_teacher($user->teacher_id);
-      $groups = array_column($groups, 'id');
+      $groups = array_column(Group::get_id_by_teacher($user->teacher_id), 'id');
 
       if (in_array($group_id, $groups)):
         $permission = true;
@@ -23,13 +20,16 @@
 
     if ($permission):
 
+      $group = new Group();
+      $group->id = $group_id;
+
       $info = [
         "id"          => $group_id,
         "teacher_id"  => $user->teacher_id,
         "path_id"     => NULL,
         "name"        => $_POST["name"],
         "description" => $_POST["desc"],
-        "icon_id"     => isset($_POST["icon"]) && !empty($_POST["icon"]) && is_numeric($_POST["icon"]) ? intval($_POST["icon"]): 1,
+        "icon_id"     => isset($_POST["icon"]) && !empty($_POST["icon"]) ? intval($_POST["icon"]): 1,
       ];
 
       if (isset($_POST["path"]) && !empty($_POST["path"]) && is_numeric($_POST["path"])):

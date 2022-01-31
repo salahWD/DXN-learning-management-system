@@ -375,18 +375,22 @@ input:focus {
   border-top-left-radius: 100%;
   background: linear-gradient(-60deg, #0dc1f4 30%, #0f4f99)
 }
-
 .group-container .group-title::after {
   right: -8px;
   border-top-left-radius: 0;
   border-top-right-radius: 100%;
   background: linear-gradient(-54deg, #0dc1f4, #0f4f99 70%)
 }
-
 .group-container .card .card-body, .group-container .card .list-group li {
   padding: 0.5rem;
 }
-
+.icon-container .icon {
+  background: #fff;
+  padding: 12px;
+  margin-left: 12px;
+  border-radius: 12px;
+  border: 1px solid #999;
+}
 .list {
   padding: 22px;
   display: flex;
@@ -445,10 +449,6 @@ input:focus {
   font-weight: bold;
   width: calc(100% - (var(--size) + 20px));
 }
-/* .path_details .level-point .desc {
-  position: relative;
-  width: 100%;
-} */
 .path_details .level-point .circle {
   position: absolute;
   left: 0;
@@ -468,6 +468,24 @@ input:focus {
 }
 
 /* End Group Manage */
+
+/* Start Group Member */
+#add-member {
+  transition: 0.5s;
+}
+#add-member.unactive {
+  opacity: 0;
+  user-select: none;
+  pointer-events: none;
+}
+.users-list {
+  transition: 0.5s;
+  height: 40px;
+}
+.users-list.unactive {
+  height: 0px;
+}
+/* End Group Member */
 
 /* Custom Library */
 

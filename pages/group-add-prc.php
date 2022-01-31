@@ -6,7 +6,7 @@
       "name"        => $_POST["name"],
       "description" => $_POST["desc"],
       "teacher_id"  => $user->teacher_id,
-      "icon"        => isset($_posT["icon"]) && is_numeric($_posT["icon"]) ? intval($_posT["icon"]) : 1,
+      "icon_id"     => isset($_POST["icon"]) ? intval($_POST["icon"]) : 1,
     ];
     
     if (isset($_POST["path"]) && !empty($_POST["path"]) && is_numeric($_POST["path"])) {

@@ -43,7 +43,6 @@ if (video) {
       
       xhr.send(data);
       
-      
     }
 
     sentBefore = true;

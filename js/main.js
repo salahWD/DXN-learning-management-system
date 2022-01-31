@@ -11,3 +11,5 @@ import("./do-exam.js");
 import("./lecture-done.js");
 import("./item-manage.js");
 import("./course-manage.js");
+import("./group-icon.js");
+import("./add-group-member.js");
