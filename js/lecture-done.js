@@ -39,7 +39,7 @@ if (video) {
       data.append("course", course);
       data.append("order", order);
       
-      xhr.open("POST", "http://localhost/dxnln/ar/lecture-done");
+      xhr.open("POST", `${theURL}/ar/lecture-done`);
       
       xhr.send(data);
       

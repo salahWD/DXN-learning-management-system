@@ -1,9 +1,9 @@
 page type = what this page require from the user.
 pages types = [
-  login               = require login
-  teacher             = require login and teacher permission
-  adimn               = require login and admin permission
-  student             = require login and student permission
+  login               = require user to be login
+  teacher             = require user to be login and teacher permission
+  adimn               = require user to be login and admin permission
+  student             = require user to be login and student permission
   main                = any body can enter
   manage              = only teachers and admins can enter this pages
 ]

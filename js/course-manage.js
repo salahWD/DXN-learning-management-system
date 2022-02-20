@@ -6,8 +6,8 @@ itemsType.forEach(itemType => {
     itemsType.forEach(item => {
       item.classList.remove("border-primary");
     });
-    sendBtn.setAttribute("href", "http://localhost/dxnln/ar/" + itemType.getAttribute("data-page"));
+    sendBtn.setAttribute("href", `${theURL}/ar/` + itemType.getAttribute("data-page"));
     itemType.classList.add("border-primary");
   });
-  sendBtn.setAttribute("href", "http://localhost/dxnln/ar/lecture-add");
+  sendBtn.setAttribute("href", `${theURL}/ar/lecture-add`);
 });

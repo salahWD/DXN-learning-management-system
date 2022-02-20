@@ -1,6 +1,9 @@
 <?php
 
-unset($_SESSION["exam"]);
+if (isset($_SESSION["exam"])) {
+  unset($_SESSION["exam"]);
+}
+
 $_SESSION["course_id"] = $URL[2];
 
 # check of permission
@@ -10,8 +13,7 @@ if ($user::USER_TYPE == 3):
 else:
   // get course info
   $course = new Course();
-  $course->id = intval($URL[2]);
-  $course->set_data($course->get_course());
+  $course->set_data(course::get_course(intval($URL[2])));
   $course->show_status = 2;
   
 endif;

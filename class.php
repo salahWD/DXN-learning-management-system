@@ -532,6 +532,166 @@ class Teacher extends User {
 
   /*=========== Retrieve Methods ===========*/
 
+  public static function get_own_courses($teacher_id, $require_permission = "ANY") {
+    /*
+      returns all courses that teacher have access on it as [
+        [id of course] ==>> course_obj {* data}
+      ]
+    */
+
+    $permission_convert = [
+      "OWNER"   => 1,// digit 1 = own
+      "CREATE"  => 2,// digit 2 = create
+      "UPDATE"  => 3,// digit 3 = update
+      "DELETE"  => 4,// digit 4 = delete
+      "INVITE"  => 5,// digit 6 = can add teachers to the course
+      "CLONE"   => 6,// digit 5 = add to priority
+      "ANY"     => 7,// any digit containes 1 | have any permissison
+    ];
+
+    global $conn;
+
+    if (array_key_exists($require_permission, $permission_convert)) {
+
+      if ($require_permission != "ANY") {
+        $sql = "SELECT P.value as permission, C.*
+        FROM teachers_courses TC
+        INNER JOIN courses C
+        ON C.id = TC.course_id
+        INNER JOIN permissions P
+        ON P.id = TC.permission_id
+        WHERE TC.teacher_id = ? AND SUBSTRING(P.value, ?, 1) = 1";
+        $args = [$teacher_id, $permission_convert[$require_permission]];
+      }else {
+        $sql = "SELECT P.value as permission, C.*
+        FROM teachers_courses TC
+        INNER JOIN courses C
+        ON C.id = TC.course_id
+        INNER JOIN permissions P
+        ON P.id = TC.permission_id
+        WHERE TC.teacher_id = ? AND INSTR(P.value, 1)";
+        $args = [$teacher_id];
+      }
+  
+      $courses_data = $conn->prepare($sql);
+      $courses_data->execute($args);
+  
+      if ($courses_data->rowCount() > 0) {
+        
+        $courses_data = $courses_data->fetchAll(PDO::FETCH_ASSOC);
+  
+        // $data = [];
+  
+        // foreach ($courses_data as $course) {
+        //   $course_obj = new Course();
+        //   $course_obj->set_data($course);
+        //   $data[$course["id"]] = $course_obj;
+        // }
+        
+        return $courses_data;
+      }else {
+        return false;
+      }
+    }else {
+      return false;
+    }
+
+  }// array > object course[*]{permission}
+
+  public static function get_own_courses_id($teacher_id) {
+    /*
+      returns all courses that teacher have access on it as [
+        [id of course] ==>> course_obj {permission}
+      ]
+    */
+
+    global $conn;
+
+    $courses_data = $conn->prepare("SELECT permissions.value as permission, courses.id
+        FROM teachers_courses
+        INNER JOIN courses
+        ON courses.id = teachers_courses.course_id
+        INNER JOIN permissions
+        ON permissions.id = teachers_courses.permission_id
+        WHERE teachers_courses.teacher_id = ?");
+    $courses_data->execute([$teacher_id]);
+
+    if ($courses_data->rowCount() > 0) {
+      
+      $data = $courses_data->fetchAll(PDO::FETCH_ASSOC);
+
+      return $data;
+    }else {
+      return false;
+    }
+
+  }// array > object courses[*](id, permission){permission}
+
+  public static function get_own_courses_id_name($teacher_id, $require_permission = "ANY") {
+    /*
+      returns all courses that teacher have access on it as [
+        [id of course] ==>> course_obj {permission, name}
+      ]
+    */
+
+    $permission_convert = [
+      "OWNER"   => 1,// digit 1 = own
+      "CREATE"  => 2,// digit 2 = create
+      "UPDATE"  => 3,// digit 3 = update
+      "DELETE"  => 4,// digit 4 = delete
+      "INVITE"  => 5,// digit 6 = can add teachers to the course
+      "CLONE"   => 6,// digit 5 = add to priority
+      "ANY"     => 7,// any digit containes 1 | have any permissison
+    ];
+
+    global $conn;
+
+    if (array_key_exists($require_permission, $permission_convert)) {
+
+      if ($require_permission != "ANY") {
+        $sql = "SELECT P.value as permission, C.id, C.title
+        FROM teachers_courses TC
+        INNER JOIN courses C
+        ON C.id = TC.course_id
+        INNER JOIN permissions P
+        ON P.id = TC.permission_id
+        WHERE TC.teacher_id = ? AND SUBSTRING(P.value, ?, 1) = 1";
+        $args = [$teacher_id, $permission_convert[$require_permission]];
+      }else {
+        $sql = "SELECT P.value as permission, C.id, C.title
+        FROM teachers_courses TC
+        INNER JOIN courses C
+        ON C.id = TC.course_id
+        INNER JOIN permissions P
+        ON P.id = TC.permission_id
+        WHERE TC.teacher_id = ? AND INSTR(P.value, 1)";
+        $args = [$teacher_id];
+      }
+
+      $courses_data = $conn->prepare($sql);
+      $courses_data->execute($args);
+    
+      if ($courses_data->rowCount() > 0) {
+        
+        $data     = $courses_data->fetchAll(PDO::FETCH_ASSOC);
+        $ordered  = [];
+        $courses  = Course::course_obj($data);
+
+        foreach ($courses as $course) {
+          $ordered[$course->id] = $course;
+        }
+
+        return $ordered;
+
+      }else {
+        return false;
+      }
+    }else {
+      return false;
+    }
+  
+  }// array > object courses[*](id, name, permission){permission}
+
   public function get_teacher($id) {
     /*
       takes $id wich is the user_id
@@ -587,118 +747,6 @@ class Teacher extends User {
     }
 
   }// boolian true | false
-
-  public function get_own_courses() {
-    /*
-      returns all courses that teacher have access on it as [
-        [id of course] ==>> course_obj {* data}
-      ]
-    */
-
-    global $conn;
-
-    $courses_data = $conn->prepare("SELECT permissions.value as permission, courses.*
-        FROM teachers_courses
-        INNER JOIN courses
-        ON courses.id = teachers_courses.course_id
-        INNER JOIN permissions
-        ON permissions.id = teachers_courses.permission_id
-        WHERE teachers_courses.teacher_id = ?");
-    $courses_data->execute([$this->teacher_id]);
-
-    if ($courses_data->rowCount() > 0) {
-      
-      $courses_data = $courses_data->fetchAll(PDO::FETCH_ASSOC);
-
-      $data = [];
-
-      foreach ($courses_data as $course) {
-        $course_obj = new Course();
-        $course_obj->set_data($course);
-        $data[$course["id"]] = $course_obj;
-      }
-      
-      return $data;
-    }else {
-      return false;
-    }
-
-  }// array > object course[*]{permission}
-
-  public function get_own_courses_id() {
-    /*
-      returns all courses that teacher have access on it as [
-        [id of course] ==>> course_obj {permission}
-      ]
-    */
-
-    global $conn;
-
-    $courses_data = $conn->prepare("SELECT permissions.value as permission, courses.id
-        FROM teachers_courses
-        INNER JOIN courses
-        ON courses.id = teachers_courses.course_id
-        INNER JOIN permissions
-        ON permissions.id = teachers_courses.permission_id
-        WHERE teachers_courses.teacher_id = ?");
-    $courses_data->execute([$this->teacher_id]);
-
-    if ($courses_data->rowCount() > 0) {
-      
-      $courses_data = $courses_data->fetchAll(PDO::FETCH_ASSOC);
-
-      $data = [];
-
-      foreach ($courses_data as $course) {
-        $course_obj = new Course();
-        $course_obj->id = $course["id"];
-        $course_obj->permission = $course["permission"];
-        $data[$course["id"]] = $course_obj;
-      }
-      
-      return $data;
-    }else {
-      return false;
-    }
-
-  }// array > object courses[*](id, permission){permission}
-
-  public function get_own_courses_id_name() {
-    /*
-      returns all courses that teacher have access on it as [
-        [id of course] ==>> course_obj {permission, name}
-      ]
-    */
-
-    global $conn;
-
-    $courses_data = $conn->prepare("SELECT permissions.value as permission, courses.id, courses.title
-        FROM teachers_courses
-        INNER JOIN courses
-        ON courses.id = teachers_courses.course_id
-        INNER JOIN permissions
-        ON permissions.id = teachers_courses.permission_id
-        WHERE teachers_courses.teacher_id = ?");
-    $courses_data->execute([$this->teacher_id]);
-
-    if ($courses_data->rowCount() > 0) {
-      
-      $courses_data = $courses_data->fetchAll(PDO::FETCH_ASSOC);
-
-      $data = [];
-
-      foreach ($courses_data as $course) {
-        $course_obj = new Course();
-        $course_obj->set_data($course);
-        $data[$course["id"]] = $course_obj;
-      }
-      
-      return $data;
-    }else {
-      return false;
-    }
-
-  }// array > object courses[*](id, name, permission){permission}
 
   public function get_paths() {
     /*
@@ -907,6 +955,18 @@ class Group {
 
   }
 
+  public static function add_member($group_id, $member_id) {
+    /* adds member to given group */
+
+    global $conn;
+
+    $stmt = $conn->prepare("INSERT INTO students_groups (student_id, group_id) VALUES (?, ?)");
+    $result = $stmt->execute([$member_id, $group_id]);
+
+    return $result;
+
+  }
+
   /*=========== Retrieve Methods ===========*/
 
   public function set_data($data) {
@@ -1041,6 +1101,57 @@ class Group {
 
   }// array > group's members
 
+  public static function get_members_studentid_name($group_id) {
+    /*
+      return : student_id of all members in this group
+      takes : group id
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT S.id AS `id`, U.fullname AS `name` FROM groups G
+      INNER JOIN students_groups SG ON SG.group_id = G.id
+      INNER JOIN students S ON S.id = SG.student_id
+      INNER JOIN users U ON U.id = S.user_id
+      WHERE G.id = ?");
+
+    $stmt->execute([$group_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group's members ids
+
+  public static function get_bot_members_students($tacher_dxnid, $teacher_id) {
+    /*
+      return : "not member" student of this teacher
+    */
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT S.id AS `student_id`, U.fullname FROM users U
+      INNER JOIN students S ON S.user_id = U.id
+      WHERE U.dxn_upline = ? AND S.id NOT IN(
+        SELECT SG.student_id FROM students_groups SG
+        INNER JOIN groups G ON G.id = SG.group_id
+        WHERE G.teacher_id = ?
+      )");
+
+    $stmt->execute([$tacher_dxnid, $teacher_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group's members ids
+
   public static function get_members_count($group_id) {
     /* return : count of all members in group */
 
@@ -1070,16 +1181,35 @@ class Group {
     global $conn;
 
     $stmt = $conn->prepare(
-      "SELECT C.id, C.title, C.description FROM groups G
+      "SELECT C.id, C.title, C.description, PC.order FROM groups G
       INNER JOIN paths P ON P.id = G.path_id
       INNER JOIN paths_courses PC ON PC.path_id = P.id
       INNER JOIN courses C ON C.id = PC.course_id
-      WHERE G.id = ?");
+      WHERE G.id = ? ORDER BY PC.order");
 
     $stmt->execute([$group_id]);
 
     if ($stmt->rowCount() > 0) {
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }// array > group's members
+
+  public static function get_path_id($group_id) {
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT P.id FROM groups G
+      INNER JOIN paths P ON P.id = G.path_id
+      WHERE G.id = ?");
+
+    $stmt->execute([$group_id]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetch(PDO::FETCH_ASSOC)['id'];
     }else {
       return false;
     }
@@ -1143,6 +1273,157 @@ class Group {
 
   }// Boolian
 
+  public static function delete_member($group_id, $member_id) {
+    /* deletes member from given group */
+
+    global $conn;
+
+    $stmt = $conn->prepare("DELETE FROM students_groups WHERE student_id = ? AND group_id = ?");
+    $result = $stmt->execute([$member_id, $group_id]);
+
+    return $result;
+
+  }// Boolian
+
+}
+
+
+class Path {
+  public $id;
+  public $group_id;
+  public $teacher_id;
+  public $courses = [];
+
+  /*=========== CREATE Methods ===========*/
+
+  public static function add_course($path_id, $course_id) {
+    /*============ adds course to spesefic path ============*/
+
+    global $conn;
+
+    $check = $conn->prepare("SELECT PC.id FROM paths_courses PC WHERE PC.path_id = ? AND PC.course_id = ?");
+    $check->execute([$path_id, $course_id]);
+    
+    if ($check->rowCount() == 0) {
+
+      $get_order = $conn->prepare("SELECT MAX(PC.order) + 1 AS `order` FROM paths_courses PC WHERE PC.path_id = ?");
+      $get_order->execute([$path_id]);
+      
+      if ($get_order->rowCount() > 0) {
+        $order = $get_order->fetch(PDO::FETCH_ASSOC)["order"];
+        if ($order == NULL || $order <= 0 || !is_numeric($order)) {
+          $order = 1;
+        }
+      }else {
+        $order = 1;
+      }
+      
+      $add_course = $conn->prepare("INSERT INTO paths_courses (path_id, course_id, `order`) VALUES (?, ?, ?)");
+      $result     = $add_course->execute([$path_id, $course_id, $order]);
+
+      return $result;
+
+    }else {
+      return false;
+    }
+
+  }
+
+  /*=========== RETRIVE Methods ===========*/
+
+  public static function get_addable_courses_id_name($teacher_id, $path_id) {
+    /*
+      returns all courses that teacher have CLONE permission on it and it's not added to the path before
+    */
+
+    global $conn;
+
+    $get_courses = $conn->prepare(
+      "SELECT P.value as permission, C.id, C.title
+      FROM teachers_courses TC
+      INNER JOIN courses C
+      ON C.id = TC.course_id
+      INNER JOIN permissions P
+      ON P.id = TC.permission_id
+      WHERE TC.teacher_id = ? AND SUBSTRING(P.value, 6, 1) = 1 AND NOT EXISTS (
+        SELECT `order`
+        FROM paths_courses PC
+        WHERE PC.course_id = C.id AND PC.path_id = ?)
+    ");
+
+    $get_courses->execute([$teacher_id, $path_id]);
+  
+    if ($get_courses->rowCount() > 0) {
+      
+      return $get_courses->fetchAll(PDO::FETCH_ASSOC);;
+    }else {
+      return false;
+    }
+
+  }
+
+  /*=========== UPDATE Methods ===========*/
+
+  public static function update_course_order($group_id, $course_id, $new_order) {
+    /*
+      Target [A] [B] [C] : [A] => [C] : [C] [B] [A]
+      Step 1 get [A] order As `item_order` : [A] [B] [C] (item_order = [C] position)
+      Step 2 [C] => become at [A] position : [CA] [B] [null]
+      Step 3 [A] => become at `item_order` : [C] [B] [A]
+    */
+    global $conn;
+
+    try {
+      #    get item's `order`
+      $stmt = $conn->prepare("SELECT `order` FROM paths_courses PC
+        INNER JOIN groups G ON G.path_id = PC.path_id
+        WHERE PC.course_id = ? AND G.id = ?");
+      $stmt->execute([$course_id, $group_id]);
+      $item_order = $stmt->fetch(PDO::FETCH_ASSOC)["order"];
+
+      #   update target item's `order` to be at the same order of item
+      $update_tow = $conn->prepare("UPDATE paths_courses PC
+        INNER JOIN groups G ON G.path_id = PC.path_id
+        SET PC.order = ? WHERE PC.order = ? AND G.id = ?");
+      $update_tow->execute([$item_order, $new_order, $group_id]);
+      
+      #   update item's `order`
+      $update_item = $conn->prepare("UPDATE paths_courses PC
+        INNER JOIN groups G ON G.path_id = PC.path_id
+        SET PC.order = ? WHERE PC.course_id = ? AND G.id = ?");
+      $update_item->execute([$new_order, $course_id, $group_id]);
+      
+      return true;
+    }catch (Exception $e) {
+      return $e->getMessage();
+    }
+
+  }// Boolian
+
+  /*=========== Delete Methods ===========*/
+
+  public static function delete_course_from_path_by_group($course_id, $group_id) {
+
+    global $conn;
+
+    #   update the order
+    $stmt = $conn->prepare("UPDATE paths_courses PC
+      INNER JOIN groups G ON G.path_id = PC.path_id
+      SET PC.order = PC.order - 1 WHERE PC.order > (
+        SELECT `order` FROM paths_courses INNER JOIN groups ON groups.path_id = paths_courses.path_id WHERE course_id = ? AND groups.id = ?
+        ) AND G.id = ?");
+    $result = $stmt->execute([$course_id, $group_id, $group_id]);
+
+    #   delete course from path
+    $stmt = $conn->prepare("DELETE PC FROM paths_courses PC
+      INNER JOIN groups G ON G.path_id = PC.path_id
+      WHERE PC.course_id = ? AND G.id = ?");
+    $result = $stmt->execute([$course_id, $group_id]);
+
+    return $result;
+
+  }// Boolian
+
 }
 
 
@@ -1150,6 +1431,7 @@ class Course {
   public $id;
   public $date;
   public $title;
+  public $order;// if this course is on a path he must have an order
   public $parent;// if it's sub course "parent" will containe "parent course id"
   public $items = [];
   public $is_enable;// to show it
@@ -1294,6 +1576,9 @@ class Course {
       $date = date_create($info['date']);
       $this->date = date_format($date, 'Y-m-d');
     }
+    if (isset($info['order']) && !empty($info['order'])) {
+      $this->order = $info['order'];
+    }
     if (isset($info['level']) && !empty($info['level'])) {
       $this->level = $info['level'];
     }
@@ -1372,7 +1657,7 @@ class Course {
 
   /*=========== Retrieve Methods ===========*/
 
-  static public function get_courses_by_teacher_id($teacher_id) {
+  public static function get_courses_by_teacher_id($teacher_id) {
     /*
       takes teacher id
       returns all accessible courses
@@ -1394,7 +1679,7 @@ class Course {
 
   }// object course[*]{accessible}
   
-  static public function get_courses_all() {
+  public static function get_courses_all() {
     /*
       takes nothig
       returns All Courses
@@ -1420,7 +1705,7 @@ class Course {
 
   }// object course[*]{*}
 
-  public function get_course() {
+  public static function get_course($course_id) {
     /* 
       does  : gets all course data
       return: info | false
@@ -1429,7 +1714,7 @@ class Course {
     global $conn;
     
     $get_course_data = $conn->prepare("SELECT courses.* FROM courses WHERE courses.id = ?");
-    $get_course_data->execute([$this->id]);
+    $get_course_data->execute([$course_id]);
 
     
     if ($get_course_data->rowCount() > 0) {
@@ -2611,6 +2896,15 @@ class ExamProces {
     }else {
       return false;
     }
+
+  }
+
+  /* =========== Create Methods =========== */
+
+  public static function add_recorde() {
+    /* saves answers and date of exam take */
+
+    global $conn;
 
   }
 

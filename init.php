@@ -39,6 +39,11 @@ if (isset($_GET["url"]) && !empty($_GET["url"])) {
               echo "You Have No Access To This Page";
               exit();
             }
+          }elseif ($page->type == "teacher") {// Just Admin Can Enter
+            if (!isset($user) || empty($user) || $user::USER_TYPE != 2) {
+              echo "You Have No Access To This Page";
+              exit();
+            }
           }elseif ($page->type == "manage") {// Admin OR Teacher
             if (!isset($user) || $user::USER_TYPE > 2 || $user::USER_TYPE < 1) {
               echo "You Have No Access To This Page<br/>";

@@ -432,26 +432,85 @@ input:focus {
   padding-right: 22px;
 }
 
+
+/* End Group Manage */
+
+/* Start Group Member */
+
 .list.path_details {
   align-items: center;
+  padding-top: 22px;
+  padding-bottom: 22px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
-.path_details .level-point {
-  position: relative;
+.list.path_details .drop-container {
   width: 100%;
+  transition: 0.3s;
+  min-height: 100px;
+  border-radius: 10px;
+  border: 2px dashed transparent;
+}
+.list.path_details .drop-container.redy {
+  border: 2px dashed #bbb;
+}
+.list.path_details .drop-container:not(:last-of-type) {
+  margin-bottom: 20px;
+}
+.path_details .drop-container:hover {
+  border: 2px dashed #777 !important;
+  border-radius: 10px;
 }
 .path_details .level-point {
+  overflow: hidden;
+  width: 100%;
+  cursor: grab;
   --size: 50px;
+  padding: 14px;
+  position: relative;
 }
 .path_details .level-point:not(:last-of-type) {
-  margin-bottom: 40px;
+  margin-bottom: 10px;
 }
-.path_details .level-point .title {
+.path_details .level-point .control-list {
+  top: -100%;
+  gap: 20px;
+  left: 50%;
+  display: flex;
+  padding: 15px 0 0;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  transition: 0.5s ease-out;
+  transform: translateX(-50%);
+}
+.path_details .level-point.active .control-list {
+  top: 0;
+  left: calc(var(--size) * 2);
+}
+.path_details .level-point .info {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: calc(100% - (var(--size) + 20px));
+}
+.path_details .level-point .info .title {
   font-weight: bold;
-  width: calc(100% - (var(--size) + 20px));
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+}
+.path_details .level-point .info .desc {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
 }
 .path_details .level-point .circle {
+  user-select: none;
   position: absolute;
-  left: 0;
+  left: 14px;
+  top: 14px;
   color: #fff;
   text-decoration: none;
 }
@@ -466,24 +525,47 @@ input:focus {
   border: 1px solid #fff;
   box-shadow: 0 0 4px rgb(0 0 0 / 40%);
 }
-
-/* End Group Manage */
-
-/* Start Group Member */
-#add-member {
+#members-table .table-row {
+  transition: 0.5s;
+  overflow: hidden;
+}
+.add-item-btn {
   transition: 0.5s;
 }
-#add-member.unactive {
+.add-item-btn.unactive {
   opacity: 0;
   user-select: none;
   pointer-events: none;
 }
-.users-list {
+.error-area {
+  transition: 0.5s;
+  overflow: hidden;
+  height: 58px;
+}
+.error-area:not(.show) {
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
+.items-list {
   transition: 0.5s;
   height: 40px;
 }
-.users-list.unactive {
-  height: 0px;
+.items-list.unactive {
+  height: 0;
+  padding: 0;
+  margin: 0!important;
+  border: none;
+}
+.option-button-container {
+  transition: 0.5s;
+  height: 45px;
+}
+.option-button-container.unactive {
+  overflow: hidden;
+  margin: 0!important;
+  height: 0;
+  padding: 0;
 }
 /* End Group Member */
 

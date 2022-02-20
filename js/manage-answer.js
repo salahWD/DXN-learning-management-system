@@ -126,7 +126,7 @@ if (answerContainer) {
       
       data.append("answear", element.parentElement.querySelector(`inpur[type="hidden"], [name*="id"]`).value);
       
-      xhr.open("POST", "http://localhost/dxnln/ar/exam-done");
+      xhr.open("POST", `${theURL}/ar/exam-done`);
       
       xhr.send(data);
       

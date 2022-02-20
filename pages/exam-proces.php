@@ -21,6 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
       if ($user::USER_TYPE == 3) {
+        $exam->add_recorde();// save answers and date of exam take
         if ($full_mark >= $exam->min_mark) {
           $exam = new Exam();
           $exam->id = intval($_SESSION["exam"]["exam_info"]["exam_id"]);

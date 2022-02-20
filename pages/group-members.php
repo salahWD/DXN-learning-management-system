@@ -28,45 +28,72 @@
   </div>
   <div class="mt-md-3 row">
     <div class="col-md-8">
-      <div class="list table table-hover" id="members-table">
+      <div class="list table-hover" id="members-table">
         <div class="sub-title table-row">
-          <div class="cell">#</div>
-          <div class="cell">اسم الطالب</div>
-          <div class="cell">التقدم</div>
+          <div class="cell id">#</div>
+          <div class="cell name">اسم الطالب</div>
+          <div class="cell percent">التقدم</div>
+          <div class="cell control">الخيارات</div>
         </div>
         <?php if (count($group->members) > 0):?>
-          <?php foreach($group->members as $member):?>
+          <div id="user-error" class="error-area sub-title text-center alert alert-danger border-0 mt-2">
+            لا يوجد اعضاء في هذه المجموعة
+          </div>
+          <?php foreach($group->members as $i => $member):?>
             <div class="table-row">
-              <div class="cell"><?php echo $member->student_id;?></div>
-              <div class="cell"><?php echo $member->fullname;?></div>
-              <div class="cell"><?php echo rand(30, 100);?>%</div>
+              <div data-id="<?php echo $member->student_id;?>" class="cell id"><?php echo $i + 1;?></div>
+              <div class="cell name"><?php echo $member->fullname;?></div>
+              <div class="cell percent"><?php echo rand(30, 100);?>%</div>
+              <div class="cell control">
+                <button class="btn btn-danger delete-btn"><i class="fas fa-trash"></i></button>
+              </div>
             </div>
           <?php endforeach;?>
         <?php else:?>
-          <div class="sub-title text-center alert alert-danger border-0 mt-2">
+          <div id="user-error" class="error-area sub-title text-center alert alert-danger border-0 mt-2 show">
             لا يوجد اعضاء في هذه المجموعة
           </div>
         <?php endif;?>
-        <?php // echo theURL . language . "/group-add-member/" . $group->id;?>
-        <button id="add-member" class="btn btn-primary mt-3"><i class="fa fa-plus" aria-hidden="true"></i> اضافة عضو للمجموعة</button>
+        <button id="add-member" class="btn btn-primary mt-3 add-item-btn">
+          <i class="fa fa-plus" aria-hidden="true"></i> 
+          <span data-error="لا يوجد اعضاء قابلين للأضافة">
+          اضافة عضو للمجموعة
+          </span>
+        </button>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="list path_details">
+      <div class="list path_details" id="path-courses-list">
           <h3 class="sub-title">خطة التعلم</h3>
           <?php if (count($group->path) > 0):?>
+            <div id="path-error" class="error-area sub-title text-center alert alert-danger border-0 mt-2 error">
+              لا يوجد دورات في الخطة المختارة
+            </div>
             <?php foreach($group->path as $i => $course):?>
-              <div class="level-point">
-                <a href="<?php echo theURL . language . "/manage-course/" . $course->id;?>" class="circle"><span><?php echo $i + 1;?></span></a>
-                <a href="<?php echo theURL . language . "/manage-course/" . $course->id;?>" class="text-decoration-none lead"><p class="title"><?php echo $course->title;?></p></a>
-                <p class="desc"><?php echo substr($course->description, 0, 40);?></p>
+              <div id="a<?php echo $i;?>" data-order="<?php echo $i+1;?>" class="drop-container">
+                <div id="b<?php echo $i;?>" data-id="<?php echo $course->id;?>" class="level-point" draggable="true">
+                  <div class="control-list">
+                    <button data-url="<?php echo theURL . language . "/path-course-manage/" . $course->id;?>" class="delete-course-button btn btn-danger edit"><i class="fas fa-trash"></i></button>
+                  </div>
+                  <a href="<?php echo theURL . language . "/manage-course/" . $course->id;?>" class="circle"><span><?php echo $i + 1;?></span></a>
+                  <div class="info">
+                    <a href="<?php echo theURL . language . "/manage-course/" . $course->id;?>" class="text-decoration-none lead"><p class="title"><?php echo $course->title;?></p></a>
+                    <p class="desc"><?php echo substr($course->description, 0, 40);?></p>
+                  </div>
+                </div>
               </div>
             <?php endforeach;?>
           <?php else:?>
-            <div class="sub-title text-center alert alert-danger border-0 mt-2">
+            <div id="path-error" class="error-area sub-title text-center alert alert-danger border-0 mt-2 show">
               لا يوجد دورات في الخطة المختارة
             </div>
           <?php endif;?>
+          <button id="add-course-to-path-button" class="btn btn-primary mt-2 add-item-btn">
+            <i class="fa fa-plus" aria-hidden="true"></i> 
+            <span data-error="لا يوجد دورات قابلة للأضافة">
+            اضافة دورة للخطة
+            </span>
+          </button>
       </div>
     </div>
   </div>

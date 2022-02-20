@@ -6,10 +6,9 @@
     
     if ($user::USER_TYPE == 1) {
       $course = new Course();
-      $course->id = $course_id;
-      $course->set_data($course->get_course());
+      $course->set_data(Course::get_course($course_id));
     }else {
-      $user->accessible_courses = $user->get_own_courses_id_name();
+      $user->accessible_courses = Teacher::get_own_courses_id_name($user->teacher_id, "ANY");
       $course = isset($user->accessible_courses[$course_id]) ? $user->accessible_courses[$course_id] : NULL;
     }
     
@@ -153,7 +152,7 @@
     if ($user::USER_TYPE == 1) {
       $user->accessible_courses = course::get_courses_all();
     }else {
-      $user->accessible_courses = $user->get_own_courses_id_name();
+      $user->accessible_courses = Teacher::get_own_courses_id_name($user->teacher_id, "ANY");
     }
     if (isset($user->accessible_courses) && !empty($user->accessible_courses) && count($user->accessible_courses) > 0) {?>
       <div class="container pt-4">

@@ -1,6 +1,6 @@
 <?php
-$course_id  = $URL[2];
-$item_order = $URL[3];
+$course_id  = intval($URL[2]);
+$item_order = intval($URL[3]);
 $item = new Item();
 
 if ($item->get_item_type_id($course_id, $item_order)) {
