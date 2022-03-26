@@ -82,4 +82,13 @@
 			</div>
 		</div>
 	</div>
+	<div class="col-md-4">
+		<div class="card text-center">
+			<div class="card-body">
+				<h3 class="card-title">ادارة الأعضاء</h3>
+				<hr>
+				<a href="<?php echo theURL . language . "/manage-members";?>" class="btn btn-primary"><i class="fa fa-tasks"></i></a>
+			</div>
+		</div>
+	</div>
 </div>

@@ -1,7 +1,7 @@
 <?php
   unset($user->main_courses);// remove main courses
   unset($_SESSION["course_id"]);// remove last course he wes in
-  $user->main_courses = $user->get_courses_path();// get main courses
+  $user->main_courses = $user->get_courses_path($user->student_id);// get main courses
   $stop_showing_courses = false;// it mean this course is the first closed course and it will open it then change itself to be true
 ?>
 <div class="container">

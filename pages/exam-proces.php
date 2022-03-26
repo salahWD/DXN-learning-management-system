@@ -21,7 +21,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
       if ($user::USER_TYPE == 3) {
-        $exam->add_recorde();// save answers and date of exam take
+        $result = $exam->add_recorde($user->student_id);
+        if (!$result) {
+          echo "<h1>Error: the \"exam take\" Record Did't Inserted</h1>";
+        }
         if ($full_mark >= $exam->min_mark) {
           $exam = new Exam();
           $exam->id = intval($_SESSION["exam"]["exam_info"]["exam_id"]);

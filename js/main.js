@@ -4,7 +4,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl)
 })
 
-const theURL = "http://dxnln";
+const theURL = "http://localhost/dxnln";
 
 import("./add-user.js");
 import("./login.js");

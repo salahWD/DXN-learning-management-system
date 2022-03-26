@@ -148,6 +148,8 @@ class User {
 class Student extends User {
   public $student_id;
   public $main_courses;
+  public $group;// group name
+  public $group_id;
   const USER_TYPE = 3;
 
 
@@ -185,7 +187,7 @@ class Student extends User {
     /*
     ====== sets members to the object
     */
-
+    
     if (isset($info['id']) && !empty($info['id'])) {
       $this->id = $info['id'];
     }
@@ -242,6 +244,12 @@ class Student extends User {
     }
     if (isset($info['main_courses']) && !empty($info['main_courses'])) {
       $this->main_courses = $info['main_courses'];
+    }
+    if (isset($info['group']) && !empty($info['group'])) {
+      $this->group = $info['group'];
+    }
+    if (isset($info['group_id']) && !empty($info['group_id'])) {
+      $this->group_id = $info['group_id'];
     }
     
   }
@@ -379,16 +387,15 @@ class Student extends User {
   
     // get student group then path then courses he most complate
     $stmt = $conn->prepare(
-      "SELECT c.id, c.title, c.description, c.date FROM users AS user
-      INNER JOIN students ON students.user_id = user.id
-      INNER JOIN students_groups ON students_groups.student_id = students.id
+      "SELECT c.id, c.title, c.description, c.date FROM students AS student
+      INNER JOIN students_groups ON students_groups.student_id = student.id
       INNER JOIN groups ON groups.id = students_groups.group_id
       INNER JOIN paths ON paths.id = groups.path_id
       INNER JOIN paths_courses ON paths_courses.path_id = paths.id
       INNER JOIN courses c ON c.id = paths_courses.course_id
-      WHERE user.id = ? ORDER BY paths_courses.order");
+      WHERE student.id = ? ORDER BY paths_courses.order");
 
-    $stmt->execute([$this->id]);
+    $stmt->execute([$this->student_id]);
 
     if ($stmt->rowCount() > 0) {
 
@@ -398,41 +405,34 @@ class Student extends User {
       
       // get teacher's main path for current student [ to see if current course is on main path to let him show items inside current course ]
       $stmt = $conn->prepare(
-        "SELECT courses.id, courses.title, courses.description, courses.date FROM users AS user
+        "SELECT courses.id, courses.title, courses.description, courses.date FROM students
+        INNER JOIN users AS user ON user.id = students.user_id
         INNER JOIN users AS teacher ON teacher.dxnid = user.dxn_upline
         INNER JOIN teachers ON teachers.user_id = teacher.id
         INNER JOIN paths ON paths.teacher_id = teachers.id
         INNER JOIN paths_courses ON paths_courses.path_id = paths.id
         INNER JOIN courses ON courses.id = paths_courses.course_id
-        WHERE paths.is_main = 1 AND user.id = ? ORDER BY paths_courses.order
+        WHERE paths.is_main = 1 AND students.id = ? ORDER BY paths_courses.order
       ");
       
-      $stmt->execute([$this->id]);
+      $stmt->execute([$this->student_id]);
       if ($stmt->rowCount() > 0) {
 
         $courses_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
       }else {
-        echo "There is no group's main path and default courses";
+        echo "There is no group's main path and default courses";// website's default courses
         exit();
       }
     }
 
     // create objcts
-    $courses = [];
-    foreach ($courses_data as $crs) {
-      $course = new Course();
-      $course->set_data($crs);
-      array_push($courses, $course);
-    }
+    $courses = Course::course_obj($courses_data);
 
     for ($i=0; $i < count($courses); $i++) { 
-      $course_status = $this->get_course_status($courses[$i]->id);// 1 close 2 open 3 finished
-      $courses[$i]->show_status = $course_status;
-      if ($course_status == 2) {
-        break;
-      }
-      if ($course_status == 1) {
+      $courses[$i]->show_status = $this->get_course_status($courses[$i]->id);// 1 close 2 open 3 finished
+
+      if ($courses[$i]->show_status == 2 || $courses[$i]->show_status == 1) {
         $courses[$i]->show_status = 2;
         break;
       }
@@ -441,6 +441,50 @@ class Student extends User {
     return $courses;// array of courses objects
 
   }// array object course[*]{in main path}
+
+  public function get_current_course() {
+    
+    // 2- get student_pass and items_order and compare them to see if he passed this course or not
+
+    global $conn;
+
+    $courses = $this->get_courses_path();
+
+    $get_student_pass = $conn->prepare("SELECT item_order_id FROM student_pass WHERE student_id = ?");
+    $get_student_pass->execute([$this->student_id]);
+
+    if ($get_student_pass->rowCount() > 0) {
+
+      $student_pass = $get_student_pass->fetchAll(PDO::FETCH_ASSOC);
+      $passed_items = array_column($student_pass, "item_order_id");
+
+      foreach ($courses as $course):
+
+        $get_all_items = $conn->prepare("SELECT id FROM items_order WHERE course_id = ?");
+        $get_all_items->execute([$course->id]);
+
+        if ($get_all_items->rowcount() > 0) {
+
+          $all_items = $get_all_items->fetchAll(PDO::FETCH_ASSOC);
+          $all_items = array_column($all_items, "id");
+
+          foreach($all_items as $item):
+            if (!in_array($item, $passed_items)) {
+              return $course;
+            }
+          endforeach;
+
+        }else {
+          return false;// course has no items wich have to be impossible
+        }
+
+      endforeach;
+
+    }else {// if there's no any finished item
+      return $group_courses[0];// so first course in the path will be "current course"
+    }
+
+  }
 
 }
 
@@ -784,6 +828,26 @@ class Teacher extends User {
 
   }
 
+  public function get_students() {
+
+    global $conn;
+
+    $stmt = $conn->prepare(
+      "SELECT U.id, U.username, S.id AS student_id, G.id AS group_id, G.name AS `group` FROM users U
+      INNER JOIN students S ON S.user_id = U.id
+      LEFT JOIN students_groups SG ON SG.student_id = S.id
+      LEFT JOIN groups G ON G.id = SG.group_id
+      WHERE U.dxn_upline = ?");
+    $stmt->execute([$this->dxnid]);
+
+    if ($stmt->rowCount() > 0) {
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }else {
+      return false;
+    }
+
+  }
+
 }
 
 
@@ -872,26 +936,7 @@ class Admin extends User {
       echo '<h1>error login [ther is no row count]</h1>';// debug
       $this->__destruct();
     }
-
     
-    $stmt = $conn->prepare(
-      "SELECT users.*, admins.*
-      FROM users
-      INNER JOIN admins ON admins.user_id = users.id
-      WHERE users.id = ?");
-
-    $stmt->execute([$id]);
-
-    if ($stmt->rowCount() > 0) {
-    
-      $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $this->set_admin($result);
-      
-    }else {
-      echo '<h1>error get_admin [ther is no row count]</h1>';// debug
-      $this->__destruct();
-    }
   }
 
 }
@@ -1523,7 +1568,7 @@ class Course {
 
     // get finished items items_order.order_id
     $finished_items_data = $conn->prepare(
-      "SELECT student_pass.item_order_id AS id
+      "SELECT student_pass.item_order_id
       FROM student_pass
       INNER JOIN items_order ON items_order.id = student_pass.item_order_id
       WHERE items_order.course_id = ? AND student_pass.student_id = ?");
@@ -1532,29 +1577,31 @@ class Course {
 
     if ($finished_items_data->rowCount() > 0) {
 
-      $finished_items_data = $finished_items_data->fetchAll(PDO::FETCH_NUM);
+      $finished_items_data = $finished_items_data->fetchAll(PDO::FETCH_ASSOC);
 
-      // extract the [value into array into array] and make it [value into array]
-      $finished_items = array();
-      foreach ($finished_items_data as $value) {
-        array_push($finished_items, $value[0]);
-      }
+      $finished_items = array_column($finished_items_data, "item_order_id");
 
-      // check if lecture is open or not
+      // is lecture open or not
       for ($i=0; $i < count($items); $i++):
+
         if (in_array($items[$i]->order_id, $finished_items)):
-          $items[$i]->show_status = 3;
+
+          $items[$i]->show_status = 3;// finished
+
         else:
-          $items[$i]->show_status = 2;
+
+          $items[$i]->show_status = 2;// open but not finished
           break;
+
         endif;
+
       endfor;
 
       return $items;
 
     }else {
 
-      $items[0]->show_status = 2;
+      $items[0]->show_status = 2;// open but not finished
 
       return $items;
     }
@@ -2901,11 +2948,30 @@ class ExamProces {
 
   /* =========== Create Methods =========== */
 
-  public static function add_recorde() {
+  public function add_recorde($student_id) {
     /* saves answers and date of exam take */
 
     global $conn;
 
+    
+    $exam_take_insert = $conn->prepare("INSERT INTO exam_take (exam_id, student_id, `date`) VALUES (?, ?, NOW())");
+    $conn->beginTransaction();
+    $result = $exam_take_insert->execute([$this->id, $student_id]);
+
+    $exam_take_id = $conn->lastInsertId();
+    $conn->commit();
+    $conn->beginTransaction();
+
+    foreach($this->compare_table as $question_id => $question) {
+
+      $answers_insert = $conn->prepare("INSERT INTO exams_answers (exam_take, question_id, `grade`) VALUES (?, ?, ?)");
+      $answers_insert->execute([$exam_take_id, $question_id, $question[1]]);
+
+    }
+    
+    $conn->commit();
+
+    return $result;
   }
 
 }
